@@ -54,16 +54,10 @@ class Mutlucell {
         if(is_array($recipents)) {
             
             $xml = '<?xml version="1.0" encoding="UTF-8"?>'.
-                '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$dateStr.' org="'.$senderID.'" >';
-            
-            
-            $recipentsString = '';
-            
-            for($i=0;$i<count($recipents);$i++) {
-                if($i>0) { $recipentsString.=', '; }
-                $recipentsString.= $recipents[$i];
-            }
-            
+                '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$datestr.' org="'.$senderID.'" >';
+
+            $recipentsString = implode(',',$recipents);
+
             $xml.='<mesaj>'.
                     '<metin>'.$this->stripText($message).'</metin>'.
                     '<nums>'.$recipentsString.'</nums>'.
@@ -117,7 +111,7 @@ class Mutlucell {
         }
         
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'.
-                '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$dateStr.' org="'.$senderID.'" >';
+                '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$datestr.' org="'.$senderID.'" >';
         
         $xml.='<mesaj>'.
                     '<metin>'.$this->stripText($message).'</metin>'.
@@ -160,7 +154,7 @@ class Mutlucell {
             
             $xml.='<mesaj>'.
                     '<metin>'.$this->stripText($message).'</metin>'.
-                    '<nums>'.$recipentsString.'</nums>'.
+                    '<nums>'.$number.'</nums>'.
                 '</mesaj>';
         
         }
@@ -171,7 +165,6 @@ class Mutlucell {
         
         
     }
-    
     
     /**
      * Balance Checker
@@ -198,7 +191,7 @@ class Mutlucell {
         
         $response = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtorgex');
         
-        return var_dump($response);
+         var_dump($response);//return void?
         
     
     }
@@ -211,47 +204,18 @@ class Mutlucell {
      */
     public function parseOutput($output) {
         //if error code is returned, api OR the app will return an integer error code
-        if($this->isnum($output)) {
+        if(is_numeric($output)) {
             
             switch($output) {
                 
-                case 20:
-                    return $this->lang['reports']['20'];
+                case $output >= 20 &&  $output <=25:
+                    return $this->lang['reports'][$output];
                     break;
-                
-                case 21:
-                    return $this->lang['reports']['21'];
-                    break;
-                
-                case 22:
-                    return $this->lang['reports']['22'];
-                    break;
-                
-                case 23:
-                    return $this->lang['reports']['23'];
-                    break;
-                
-                case 24:
-                    return $this->lang['reports']['24'];
-                    break;
-                
-                case 25:
-                    return $this->lang['reports']['25'];
-                    break;
-                
-                
+
                 //In-app messages:
-                case 100:
-                    return $this->lang['app'][0];
-                    break;
-                
-                case 101:
-                    return $this->lang['app'][1];
-                    break;
-                
-                case 102:
-                    return $this->lang['app'][2];
-                    break;
+                case $output >= 100 &&  $output <=102:
+                    return $this->lang['app'][$output - 100];
+                  break;
                 
                 default:
                     return $this->lang['reports']['999'];
@@ -313,36 +277,18 @@ class Mutlucell {
     
     
     /**
-     * Checks whether the number is an integer or not with Regex
-     * Taken from PHP-Fusion <http://php-fusion.co.uk>
-     * @param string $value string to be checked
-     * @return boolean
-     */
-    private function isnum($value) {
-        if (!is_array($value)) {
-          return (preg_match("/^[0-9]+$/", $value));
-        } else {
-          return false;
-        }
-    }
-                            
-    /**
      * Stripis unwanted HTML characters and cleans it up
      * @param string $text string to be trimmed
      * @return string
+     * http://stackoverflow.com/questions/3426090/how-do-you-make-strings-xmlsafe
      */
     private function stripText($text) {
         if (!is_array($text)) {
-            $text       = stripslashes(trim($text));
-            $text       = preg_replace('/\s+/', ' ', $text); //replace multiple spaces into one
-            $text       = preg_replace("/(&amp;)+(?=\#([0-9]{2,3});)/i", "&", $text);
-            $search     = array("&", ">", "<");
-            $replace    = array("", "", "");
-            $text       = str_replace($search, $replace, $text);
+           return htmlentities($text, ENT_QUOTES);
         } else {
-            $text = '';
+           return '';
         }
-        return $text;
+
     }
     
 }
