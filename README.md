@@ -14,7 +14,7 @@ This configuration includes some packages:
 
 * Öncelikle `composer.json` dosyanızdaki `require` kısmına aşağıdaki değeri ekleyin:
 
-    ```
+    ```php
     "ardakilic/mutlucell": "dev-master"
     ```
 
@@ -22,7 +22,7 @@ This configuration includes some packages:
 * Ardından composer paketlerinizi güncellemelisiniz. `composer update` komutu ile bunu yapabilirsiniz.
 * Şimdi de environment'ınıza konfigürasyon dosyasını paylaşmalısınız. Bunun için aşağıdaki komutu çalıştırın:
 
-    ```
+    ```php
     php artisan config:publish ardakilic/mutlucell
     ```
 * `app/config/packages/ardakilic/mutlucell` klasörü altına config.php dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini girmelisiniz.
@@ -39,7 +39,7 @@ echo Mutlucell::parseOutput($send);
 
 ####Birden fazla kişiye aynı anda aynı SMS'i göndermek için:
 
-```
+```php
 $kisiler = array('00905312345678', '+905351114478', '05369998874', '5315558896');
 $send = Mutlucell::sendBulk($kisiler, 'Merhaba');
 echo Mutlucell::parseOutput($send);
@@ -47,7 +47,7 @@ echo Mutlucell::parseOutput($send);
 
 ####Birden fazla kişiye aynı anda farklı SMS'ler göndermek için:
 
-```
+```php
 $kisiMesajlar = array(
     array('05315558964', 'Merhaba1'),
     array('+905415589632', 'Merhaba2'),
@@ -59,25 +59,25 @@ echo Mutlucell::parseOutput($send);
 
 ####Kalan Kontör Sorgulaması için:
 
-```
+```php
 echo Mutlucell::checkBalance();
 ```
 
 ####Originatörleri listelemek için:
 
-```
+```php
 echo Mutlucell::listOriginators();
 ```
 
 #### Gelecek bir tarihe SMS yollamak için:
 
-```
+```php
 echo Mutlucell::send('05312223665', 'Geç gidecek mesaj', '2099-06-30 15:00'); //saniye yok, dikkat!
 ```
 
 #### Farklı bir Originatör (Sender ID) kullanarak SMS yollamak için:
 
-```
+```php
 echo Mutlucell::send('05312223665', 'merhaba', '', 'diğerOriginator'); //saniye yok, dikkat!
 ```
 
