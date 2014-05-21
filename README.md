@@ -67,7 +67,7 @@ echo Mutlucell::parseOutput($send);
 Veya 
 
 ```php
-$send = Mutlucell::sendBulk('00905312345678, +905351114478, 05369998874, '5315558896', 'Merhaba');
+$send = Mutlucell::sendBulk('00905312345678, +905351114478, 05369998874, 5315558896', 'Merhaba');
 echo Mutlucell::parseOutput($send);
 ```
 
