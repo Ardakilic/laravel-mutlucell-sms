@@ -121,7 +121,7 @@ class Mutlucell {
         
         $xml.='<mesaj>'.
                     '<metin>'.$this->stripText($message).'</metin>'.
-                    '<nums>'.$recipentsString.'</nums>'.
+                    '<nums>'.$receiver.'</nums>'.
                 '</mesaj>';
         
         $xml.='</smspack>';
