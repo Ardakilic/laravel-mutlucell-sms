@@ -19,16 +19,18 @@ Kurulum
     Alternatif olarak `composer require ardakilic/mutlucell:dev-master` komutu ile de paketi ekleyebilirsiniz.
 * Ardından composer paketlerinizi güncellemelisiniz. `composer update` komutu ile bunu yapabilirsiniz.
 * Şimdi de `app/config/app.php` dosyasını açın, `providers` içine en alta şunu girin:
+
     ```php
     'Ardakilic\Mutlucell\MutlucellServiceProvider',
     ```
 * Şimdi yine aynı dosyada `aliases` altına şu değeri girin:
+
     ```php
     'Mutlucell' => 'Ardakilic\Mutlucell\Facades\Mutlucell',
     ```
 * Şimdi de environment'ınıza konfigürasyon dosyasını paylaşmalısınız. Bunun için aşağıdaki komutu çalıştırın:
 
-    ```php
+    ```shell
     php artisan config:publish ardakilic/mutlucell
     ```
 * `app/config/packages/ardakilic/mutlucell` klasörü altına `config.php` dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini girmelisiniz.
