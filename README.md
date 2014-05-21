@@ -10,8 +10,6 @@ Uyarı, hata ve bilgilendirme için Türkçe ve de İngilizce dillerinde uyarı 
 Kurulum
 -----------
 
-This configuration includes some packages:
-
 * Öncelikle `composer.json` dosyanızdaki `require` kısmına aşağıdaki değeri ekleyin:
 
     ```php
