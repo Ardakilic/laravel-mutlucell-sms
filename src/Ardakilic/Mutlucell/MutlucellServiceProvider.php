@@ -2,8 +2,9 @@
 
 /**
  * Laravel 4 Mutlucell SMS
+ * @license MIT License
  * @author Arda Kılıçdağı <ardakilicdagi@gmail.com>
- * @web http://arda.pw
+ * @link http://arda.pw
  *
 */
 
@@ -47,9 +48,9 @@ class MutlucellServiceProvider extends ServiceProvider {
 	 *
 	 * @return array
 	 */
-	public function provides()
+	/*public function provides()
 	{
 		return array('mutlucell');
-	}
+	}*/
 
 }

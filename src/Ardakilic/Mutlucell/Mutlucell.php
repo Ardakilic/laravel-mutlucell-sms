@@ -2,8 +2,9 @@
 
 /**
  * Laravel 4 Mutlucell SMS
+ * @license MIT License
  * @author Arda Kılıçdağı <ardakilicdagi@gmail.com>
- * @web http://arda.pw
+ * @link http://arda.pw
  *
 */
 
@@ -13,36 +14,34 @@ class Mutlucell {
 	protected $config;
 	protected $lang;
 	protected $code;
-	//protected $success;
+
+	protected $senderID;
+	protected $message;
 
     public function __construct($app) {
-		$this->app    = $app;
-		$locale       = $app['config']['app.locale'];
-		$this->lang   = $app['translator']->get("mutlucell::{$locale}");
-		$this->config = $app['config']['mutlucell::config'];
+  		$this->app    	= $app;
+  		$locale       	= $app['config']['app.locale'];
+  		$this->lang   	= $app['translator']->get("mutlucell::{$locale}");
+  		$this->config 	= $app['config']['mutlucell::config'];
+
+  		$this->senderID	= $this->config['default_sender'];
     }
+
+    
     
     /**
      * Send same bulk message to many people 
      * @param $recipents array recipents
      * @param $message string message to be sent
      * @param $senderID string originator/sender id (may be a text or number)
-     * @return status
+     * @return status API response
      */
     public function sendBulk($recipents, $message='', $date='', $senderID='') {
         
-        
-        //Pre-checks act1
-        if($senderID==null || !strlen(trim($senderID))) {
-            $senderID = $this->config['default_sender'];
-        }
-        
-        
-        //Pre-checks act2
-        if($message==null || !strlen(trim($message))) {
-            return 100;
-        }
-        
+        //Checks the $message and $senderID, and initializes it
+    	$this->preChecks($message, $senderID);
+
+               
         //Sending for future date
         $dateStr='';
         if(strlen($date)) {
@@ -52,57 +51,40 @@ class Mutlucell {
         
         //Recipents check + XML initialise
         if(is_array($recipents)) {
-            
-            $xml = '<?xml version="1.0" encoding="UTF-8"?>'.
-                '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$dateStr.' org="'.$senderID.'" >';
-            
-            
-            $recipentsString = '';
-            
-            for($i=0;$i<count($recipents);$i++) {
-                if($i>0) { $recipentsString.=', '; }
-                $recipentsString.= $recipents[$i];
-            }
-            
-            $xml.='<mesaj>'.
-                    '<metin>'.$this->stripText($message).'</metin>'.
-                    '<nums>'.$recipentsString.'</nums>'.
-                '</mesaj>';
-            
-            
-            $xml.='</smspack>';
-            
-            
-            return $this->postXML($xml);
-            
-            
-        } else {
-            //Recipents must be an array
-            return 101;
+        	$recipents = implode(', ', $recipents);
         }
+            
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'.
+            '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$dateStr.' org="'.$this->senderID.'" >';
+        
+        $xml.='<mesaj>'.
+                '<metin>'.$this->message.'</metin>'.
+                '<nums>'.$recipents.'</nums>'.
+            '</mesaj>';
+        
+        
+        $xml.='</smspack>';
+        
+        
+        return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
+            
         
 
     }
     
     /**
      * Sends a single SMS to a single person 
-     * @param $recipent string recipent
-     * @param $message string message to be sent
-     * @param $senderID string originator/sender id (may be a text or number)
-     * @return status
+     * @param string $receiver receiver number
+     * @param string $message message to be sent
+     * @param string $date delivery date
+     * @param string $senderID originator/sender id (may be a text or number)
+     * @return status API response
      */
     public function send($receiver, $message='', $date='', $senderID=''){
-    
-        //Pre-checks act1
-        if($senderID==null || !strlen(trim($senderID))) {
-            $senderID = $this->config['default_sender'];
-        }
-        
-        
-        //Pre-checks act2
-        if($message==null || !strlen(trim($message))) {
-            return 100;
-        }
+    	
+    	//Checks the $message and $senderID, and initializes it
+    	$this->preChecks($message, $senderID);
+
         
         //Pre-checks act3
         if($receiver==null || !strlen(trim($receiver))) {
@@ -117,28 +99,29 @@ class Mutlucell {
         }
         
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'.
-                '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$dateStr.' org="'.$senderID.'" >';
+                '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$dateStr.' org="'.$this->senderID.'" >';
         
         $xml.='<mesaj>'.
-                    '<metin>'.$this->stripText($message).'</metin>'.
+                    '<metin>'.$this->$message.'</metin>'.
                     '<nums>'.$receiver.'</nums>'.
                 '</mesaj>';
         
         $xml.='</smspack>';
         
-        return $this->postXML($xml);
+        return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
     
     }
     
     
     /**
      * Sends multiple SMSes to various people with various content 
-     * @param $reciversMessage array recipents and message
-     * @param $senderID string originator/sender id (may be a text or number)
-     * @return status
+     * @param array $reciversMessage recipents and message
+     * @param string $date delivery date
+     * @param string $senderID originator/sender id (may be a text or number)
+     * @return status API response
      */
     public function sendMulti($reciversMessage, $date='', $senderID='') {
-        
+
         //Pre-checks act1
         if($senderID==null || !strlen(trim($senderID))) {
             $senderID = $this->config['default_sender'];
@@ -160,14 +143,14 @@ class Mutlucell {
             
             $xml.='<mesaj>'.
                     '<metin>'.$this->stripText($message).'</metin>'.
-                    '<nums>'.$recipentsString.'</nums>'.
+                    '<nums>'.$number.'</nums>'.
                 '</mesaj>';
         
         }
         
         $xml.='</smspack>';
         
-        return $this->postXML($xml);
+        return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
         
         
     }
@@ -190,23 +173,24 @@ class Mutlucell {
         return intval(substr($response,1));
         
     }
-    
+
+    /**
+     * Lists the originators associated for the account
+     * @return string list of originators
+    */
     public function listOriginators() {
         
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'.
                 '<smsorig ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'" />';
         
         $response = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtorgex');
-        
-        return var_dump($response);
-        
-    
+        return $response;
     }
     
     
     /**
      * Parse the output
-     * @param $output string
+     * @param string $output API's response
      * return string status code
      */
     public function parseOutput($output) {
@@ -260,9 +244,9 @@ class Mutlucell {
             }
             
         //returns from Mutlucell
-        //TODO BETTER REGEX
-        } elseif(substr($output,0,1) == '&' && stristr($output, '#')) {
-            
+        //TODO A GOOD REGEX
+        //} elseif(substr($output,0,1) == '&' && stristr($output, '#')) {
+        } elseif(preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {  
             //returned output is formatted like $ID#STATUS
             //E.g: $1234567#1.0
             $output = explode('#', $output);
@@ -278,19 +262,71 @@ class Mutlucell {
         } else {
             return $output;   
         }
+           
+    }
+
+     /**
+     * Gets the SMS's status
+     * @param string $output API's response
+     * return boolean
+     */
+    public function getStatus($output) {
+    	 //if error code is returned, API will return an integer error code
+        if($this->isnum($output)) {
+        	return false;
+
+        //returns from Mutlucell
+        //TODO A GOOD REGEX
+        //} elseif(substr($output,0,1) == '&' && stristr($output, '#')) {
+        } elseif(preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
+            
+            //returned output is formatted like $ID#STATUS
+            //E.g: $1234567#1.0
+            $output = explode('#', $output);
+                        
+            $status = $output[1];
+            if($status == '0.0') {
+                return false;
+            } else {
+                return true;
+            }
         
-        
+        //Unknown error
+        } else {
+            return false;   
+        }
+    }
+
+    /**
+     * Prechecks to prevent multiple usage
+     * @param string $message message to be sent
+     * @param string $senderID originator ID
+     */
+    protected function preChecks($message, $senderID) {
+
+    	//Pre-checks act1
+        if($senderID==null || !strlen(trim($senderID))) {
+            $this->senderID = $this->config['default_sender'];
+        } else {
+        	$this->senderID	= $senderID;
+        }
+
+        //Pre-checks act2
+        if($message==null || !strlen(trim($message))) {
+            $this->message = '&';//Error character for sms
+        } else {
+        	$this->message = $this->stripText($message);
+        }
     }
     
     /**
      * CURL XML post sending method
-     * @param xml string formatted string
-     * @return string
+     * @param string $xml formatted string
+     * @return string API Status
      *
      */
-    private function postXML($xml, $url = 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex') {
+    private function postXML($xml, $url) {
         
-     
         $ch = curl_init($url);
         //CURLOPT_MUTE is deprecated in new PHP versions, 
         //instead, we'll use CURLOPT_RETURNTRANSFER
@@ -302,7 +338,6 @@ class Mutlucell {
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: text/xml'));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         
         $output = curl_exec($ch);
         curl_close($ch);
@@ -314,13 +349,14 @@ class Mutlucell {
     
     /**
      * Checks whether the number is an integer or not with Regex
+     * !I'm not using is_int() because people may add numbers in quotes!
      * Taken from PHP-Fusion <http://php-fusion.co.uk>
      * @param string $value string to be checked
      * @return boolean
      */
     private function isnum($value) {
         if (!is_array($value)) {
-          return (preg_match("/^[0-9]+$/", $value));
+          return preg_match("/^[0-9]+$/", $value);
         } else {
           return false;
         }
@@ -328,14 +364,14 @@ class Mutlucell {
                             
     /**
      * Stripis unwanted HTML characters and cleans it up
+     * Because using returns misformatted XML errors
      * @param string $text string to be trimmed
-     * @return string
+     * @return string stripped text
      */
     private function stripText($text) {
         if (!is_array($text)) {
             $text       = stripslashes(trim($text));
             $text       = preg_replace('/\s+/', ' ', $text); //replace multiple spaces into one
-            $text       = preg_replace("/(&amp;)+(?=\#([0-9]{2,3});)/i", "&", $text);
             $search     = array("&", ">", "<");
             $replace    = array("", "", "");
             $text       = str_replace($search, $replace, $text);
