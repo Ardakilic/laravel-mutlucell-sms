@@ -14,18 +14,17 @@ This configuration includes some packages:
 
 * Öncelikle `composer.json` dosyanızdaki `require` kısmına aşağıdaki değeri ekleyin:
 
-```
-"ardakilic/mutlucell": "dev-master"
-
-```
+    ```
+    "ardakilic/mutlucell": "dev-master"
+    ```
 
     Alternatif olarak `composer require ardakilic/mutlucell:dev-master` komutu ile de paketi ekleyebilirsiniz.
 * Ardından composer paketlerinizi güncellemelisiniz. `composer update` komutu ile bunu yapabilirsiniz.
 * Şimdi de environment'ınıza konfigürasyon dosyasını paylaşmalısınız. Bunun için aşağıdaki komutu çalıştırın:
 
-```
-php artisan config:publish ardakilic/mutlucell
-```
+    ```
+    php artisan config:publish ardakilic/mutlucell
+    ```
 * `app/config/packages/ardakilic/mutlucell` klasörü altına config.php dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini girmelisiniz.
 
 Kullanım
