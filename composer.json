@@ -20,5 +20,5 @@
             "Ardakilic\\Mutlucell\\": "src/"
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "stable"
 }
