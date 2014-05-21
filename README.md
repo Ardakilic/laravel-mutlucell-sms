@@ -45,11 +45,29 @@ $send = Mutlucell::send('05312345678', 'Merhaba');
 echo Mutlucell::parseOutput($send);
 ```
 
+####SMS gönderildi mi ?
+
+```php
+$send = Mutlucell::send('05312345678', 'Merhaba');
+if(Mutlucell::getStatus($send)) {
+    echo 'SMS başarı ile gönderildi!';
+} else {
+    echo 'SMS gönderilemedi';
+}
+```
+
 ####Birden fazla kişiye aynı anda aynı SMS'i göndermek için:
 
 ```php
 $kisiler = array('00905312345678', '+905351114478', '05369998874', '5315558896');
 $send = Mutlucell::sendBulk($kisiler, 'Merhaba');
+echo Mutlucell::parseOutput($send);
+```
+
+Veya 
+
+```php
+$send = Mutlucell::sendBulk('00905312345678, +905351114478, 05369998874, '5315558896', 'Merhaba');
 echo Mutlucell::parseOutput($send);
 ```
 
@@ -86,7 +104,7 @@ echo Mutlucell::send('05312223665', 'Geç gidecek mesaj', '2099-06-30 15:00'); /
 #### Farklı bir Originatör (Sender ID) kullanarak SMS yollamak için:
 
 ```php
-echo Mutlucell::send('05312223665', 'merhaba', '', 'diğerOriginator'); //saniye yok, dikkat!
+echo Mutlucell::send('05312223665', 'merhaba', '', 'diğerOriginator');
 ```
 
 
