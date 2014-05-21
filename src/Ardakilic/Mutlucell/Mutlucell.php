@@ -54,7 +54,7 @@ class Mutlucell {
         if(is_array($recipents)) {
             
             $xml = '<?xml version="1.0" encoding="UTF-8"?>'.
-                '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$datestr.' org="'.$senderID.'" >';
+                '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$dateStr.' org="'.$senderID.'" >';
             
             
             $recipentsString = '';
@@ -117,7 +117,7 @@ class Mutlucell {
         }
         
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'.
-                '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$datestr.' org="'.$senderID.'" >';
+                '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$dateStr.' org="'.$senderID.'" >';
         
         $xml.='<mesaj>'.
                     '<metin>'.$this->stripText($message).'</metin>'.
