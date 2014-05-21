@@ -102,7 +102,7 @@ class Mutlucell {
                 '<smspack ka="'.$this->config['auth']['username'].'" pwd="'.$this->config['auth']['password'].'"'.$dateStr.' org="'.$this->senderID.'" >';
         
         $xml.='<mesaj>'.
-                    '<metin>'.$this->$message.'</metin>'.
+                    '<metin>'.$this->message.'</metin>'.
                     '<nums>'.$receiver.'</nums>'.
                 '</mesaj>';
         
