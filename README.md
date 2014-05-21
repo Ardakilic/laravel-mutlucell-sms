@@ -38,7 +38,7 @@ Kullanım
 
 ####Birine o anda tekil SMS göndermek için:
 
-```
+```php
 $send = Mutlucell::send('05312345678', 'Merhaba');
 echo Mutlucell::parseOutput($send);
 ```
