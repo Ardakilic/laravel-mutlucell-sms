@@ -11,14 +11,15 @@
 return array(
     
     //Mutlucell Authentication
-    'auth'    => array(
-        
+    'auth'              => array(
         'username'  => 'username',
-    
         'password'  => 'password',
     ),
     
     //Default sender ID, for senders (AKA Originator)
-    'default_sender' => 'originator',
+    'default_sender'    => 'originator',
+
+    //use Queue service?
+    'queue'             => false,
 
 );

@@ -14,7 +14,7 @@ Kurulum
 
 * Öncelikle `composer.json` dosyanızdaki `require` kısmına aşağıdaki değeri ekleyin:
 
-    ```php
+    ```json
     "ardakilic/mutlucell": "dev-master"
     ```
 
@@ -109,6 +109,14 @@ echo Mutlucell::send('05312223665', 'Geç gidecek mesaj', '2099-06-30 15:00'); /
 echo Mutlucell::send('05312223665', 'merhaba', '', 'diğerOriginator');
 ```
 
+Yapılacaklar
+----
+* Guzzle entegrasyonu
+* ?
+
+Notlar
+----
+22 Temmuz 2014'den önce kurulum gerçekleştirdiyseniz config dosyasını ortama yeniden paylaşmalısınız
 
 Lisans
 ----
