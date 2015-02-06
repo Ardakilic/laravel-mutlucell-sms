@@ -4,7 +4,7 @@ namespace Ardakilic\Mutlucell;
 /**
  * Laravel 4 Mutlucell SMS
  * @license MIT License
- * @author Arda Kılıçdağı <ardakilicdagi@gmail.com>
+ * @author Arda Kılıçdağı <arda@kilicdagi.com>
  * @link http://arda.pw
  *
  */
@@ -239,9 +239,7 @@ class Mutlucell
                     
             }
             
-            //returns from Mutlucell
-            //TODO A GOOD REGEX
-            //} elseif(substr($output,0,1) == '&' && stristr($output, '#')) {
+        //returns from Mutlucell
         } elseif (preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
             //returned output is formatted like $ID#STATUS
             //E.g: $1234567#1.0
@@ -254,7 +252,7 @@ class Mutlucell
                 return $this->lang['app']['100'];
             }
             
-            //Unknown error
+        //Unknown error
         } else {
             return $output;
         }
@@ -270,11 +268,10 @@ class Mutlucell
     {
         //if error code is returned, API will return an integer error code
         if ($this->isnum($output)) {
+            
             return false;
             
-            //returns from Mutlucell
-            //TODO A GOOD REGEX
-            //} elseif(substr($output,0,1) == '&' && stristr($output, '#')) {
+        //returns from Mutlucell
         } elseif (preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
             
             //returned output is formatted like $ID#STATUS
@@ -288,7 +285,7 @@ class Mutlucell
                 return true;
             }
             
-            //Unknown error
+        //Unknown error
         } else {
             return false;
         }
@@ -301,7 +298,7 @@ class Mutlucell
      */
     protected function preChecks($message, $senderID)
     {
-        
+        //TODO a better method for this
         //Pre-checks act1
         if ($senderID == null || !strlen(trim($senderID))) {
             $this->senderID = $this->config['default_sender'];
@@ -372,8 +369,6 @@ class Mutlucell
             return $output;
         }
         
-        
-        
     }
     
     
@@ -401,6 +396,7 @@ class Mutlucell
      */
     private function stripText($text)
     {
+        //TODO a better method for this
         if (!is_array($text)) {
             $text    = stripslashes(trim($text));
             $text    = preg_replace('/\s+/', ' ', $text); //replace multiple spaces into one
@@ -418,7 +414,7 @@ class Mutlucell
         } else {
             $text = '';
         }
-        return $text;
+        return htmlspecialchars($text);
     }
     
 }

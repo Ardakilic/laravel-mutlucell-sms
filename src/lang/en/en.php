@@ -3,7 +3,7 @@
 /**
  * Laravel 4 Mutlucell SMS
  * @license MIT License
- * @author Arda Kılıçdağı <ardakilicdagi@gmail.com>
+ * @author Arda Kılıçdağı <arda@kilicdagi.com>
  * @link http://arda.pw
  *
 */

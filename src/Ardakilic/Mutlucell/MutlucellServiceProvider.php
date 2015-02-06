@@ -2,9 +2,9 @@
 namespace Ardakilic\Mutlucell;
 
 /**
- * Laravel 4 Mutlucell SMS
+ * Laravel 5 Mutlucell SMS
  * @license MIT License
- * @author Arda Kılıçdağı <ardakilicdagi@gmail.com>
+ * @author Arda Kılıçdağı <arda@kilicdagi.com>
  * @link http://arda.pw
  *
  */
@@ -14,22 +14,13 @@ use Illuminate\Support\ServiceProvider;
 class MutlucellServiceProvider extends ServiceProvider
 {
     
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = false;
+    //paylaşılacak config dosyası
+    $this->publishes([
+        __DIR__.'/../../config/mutlucell.php' => config_path('mutlucell.php'),
+    ], 'config');
     
-    /**
-     * Bootstrap the application events.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        $this->package('ardakilic/mutlucell');
-    }
+    //paylaşılacak dil dosyaları
+    $this->loadTranslationsFrom(__DIR__.'/../../lang', 'mutlucell');
     
     /**
      * Register the service provider.
