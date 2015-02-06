@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Laravel 4 Mutlucell SMS
+ * Laravel 5 Mutlucell SMS
  * @license MIT License
- * @author Arda Kılıçdağı <ardakilicdagi@gmail.com>
+ * @author Arda Kılıçdağı <arda@kilicdagi.com>
  * @link http://arda.pw
  *
 */
@@ -11,13 +11,13 @@
 return array(
     
     //Mutlucell Authentication
-    'auth'              => array(
-        'username'  => 'username',
-        'password'  => 'password',
+    'auth'          => array(
+        'username'  => '',
+        'password'  => '',
     ),
     
     //Default sender ID, for senders (AKA Originator)
-    'default_sender'    => 'originator',
+    'default_sender'    => '',
 
     //use Queue service?
     'queue'             => false,

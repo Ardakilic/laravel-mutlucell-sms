@@ -1,19 +1,19 @@
 {
     "name": "ardakilic/mutlucell",
-    "description": "Mutlucell SMS API wrapper for sending sms text messages for Laravel 4.",
+    "description": "Mutlucell SMS API wrapper for sending sms text messages for Laravel 5.",
     "keywords": ["laravel","sms","api", "mutlucell"],
     "license": "MIT",
     "authors": [
         {
             "name": "Arda Kilicdagi",
-            "email": "ardakilicdagi@gmail.com",
+            "email": "arda@kilicdagi.com",
             "homepage": "http://arda.pw",
             "role": "Developer"
         }
     ],
     "require": {
         "php": ">=5.3.0",
-        "illuminate/support": "4.*"
+        "illuminate/support": "5.*"
     },
     "autoload": {
         "psr-0": {

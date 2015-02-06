@@ -1,24 +1,25 @@
-Laravel Mutlucell SMS
+Laravel 5 ve 4 için Mutlucell SMS
 =========
 
 [![Latest Stable Version](https://poser.pugx.org/ardakilic/mutlucell/v/stable.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![Total Downloads](https://poser.pugx.org/ardakilic/mutlucell/downloads.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![Latest Unstable Version](https://poser.pugx.org/ardakilic/mutlucell/v/unstable.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![License](https://poser.pugx.org/ardakilic/mutlucell/license.svg)](https://packagist.org/packages/ardakilic/mutlucell)
 
-Bu paket sayesinde Laravel 4.x kullanan projelerinizde [Mutlucell](http://www.mutlucell.com.tr/) altyapısını kullanarak tekli veya çoklu sms gönderebilir, bakiye ve originator ID sorgulayabilirsiniz.
+Bu paket sayesinde Laravel 5.x veya 4.x kullanan projelerinizde [Mutlucell](http://www.mutlucell.com.tr/) altyapısını kullanarak tekli veya çoklu sms gönderebilir, bakiye ve originator ID sorgulayabilirsiniz. 
+
+_Bu branch Laravel 5 içindir. Eğer bu paketi Laravel 4 üzerinde kullanmak istiyorsanız [1.0.0 sürümünü](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/1.0.0), `"ardakilic/mutlucell": "1.0.0"` etiketi ile kullanmalısınız._
 
 Uyarı, hata ve bilgilendirme için Türkçe ve de İngilizce dillerinde uyarı ve bilgi mesajlarını barındırır.
 
 
-
-Kurulum
+Kurulum (Laravel 5.x için)
 -----------
 
 * Öncelikle `composer.json` dosyanızdaki `require` kısmına aşağıdaki değeri ekleyin:
 
     ```json
-    "ardakilic/mutlucell": "dev-master"
+    "ardakilic/mutlucell": "2.0.0"
     ```
 
-    Alternatif olarak `composer require ardakilic/mutlucell:dev-master` komutu ile de paketi ekleyebilirsiniz.
+    Alternatif olarak `composer require ardakilic/mutlucell:2.0.0` komutu ile de paketi ekleyebilirsiniz.
 * Ardından composer paketlerinizi güncellemelisiniz. `composer update` komutu ile bunu yapabilirsiniz.
 * Şimdi de `app/config/app.php` dosyasını açın, `providers` içine en alta şunu girin:
 
@@ -33,9 +34,9 @@ Kurulum
 * Şimdi de environment'ınıza konfigürasyon dosyasını paylaşmalısınız. Bunun için aşağıdaki komutu çalıştırın:
 
     ```shell
-    php artisan config:publish ardakilic/mutlucell
+    php artisan vendor:publish
     ```
-* `app/config/packages/ardakilic/mutlucell` klasörü altına `config.php` dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini girmelisiniz.
+* `app/config/mutlucell.php` dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini girmelisiniz.
 
 Kullanım
 -------------
