@@ -14,14 +14,18 @@ use Illuminate\Support\ServiceProvider;
 class MutlucellServiceProvider extends ServiceProvider
 {
     
-    //paylaşılacak config dosyası
-    $this->publishes([
-        __DIR__.'/../../config/mutlucell.php' => config_path('mutlucell.php'),
-    ], 'config');
-    
-    //paylaşılacak dil dosyaları
-    $this->loadTranslationsFrom(__DIR__.'/../../lang', 'mutlucell');
-    
+
+    public function boot()
+    {
+        //paylaşılacak config dosyası
+        $this->publishes([
+            __DIR__.'/../../config/mutlucell.php' => config_path('mutlucell.php'),
+        ], 'config');
+        
+        //paylaşılacak dil dosyaları
+        $this->loadTranslationsFrom(__DIR__.'/../../lang', 'mutlucell');
+    }
+
     /**
      * Register the service provider.
      *
@@ -36,5 +40,16 @@ class MutlucellServiceProvider extends ServiceProvider
         });
         
     }
+
+    /**
+    * Get the services provided by the provider.
+    *
+    * @return string
+    */
+    public function provides()
+    {
+        return ['mutlucell'];
+    }
+
 
 }
