@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Laravel 4 Mutlucell SMS
+ * Laravel 5 Mutlucell SMS
  * @license MIT License
  * @author Arda Kılıçdağı <arda@kilicdagi.com>
  * @link http://arda.pw
@@ -9,8 +9,7 @@
 */
 
 return array (
-    
-        
+
     //Paket Raporları
     'reports'  => array(
         
@@ -25,7 +24,7 @@ return array (
         '999'   =>  'Unknwon error',
     
     ),
-    
+
     //Sms Gönderim Raporları
     'sms'       => array(
         
@@ -41,8 +40,8 @@ return array (
         '12'    =>  'No Network',
         '13'    =>  'Error',
         
-    ),  
-    
+    ),
+
     //App-specific
     'app'   => array(
         
@@ -51,9 +50,9 @@ return array (
         '2'     => 'Misformatted Recipent(s), all of them have to be an integer',
         '3'     => 'You must provide a receiver number',
         
-        '100'   => 'SMS have been sent successfully!',     
+        '100'   => 'SMS have been sent successfully!',
         '101'   => 'No SMS sent',
-        
+
     ),
-    
+
 );

@@ -9,8 +9,7 @@
 */
 
 return array (
-  
-        
+
     //Paket Raporları
     'reports'  => array(
          
@@ -46,15 +45,14 @@ return array (
     //App-specific
     'app'   => array(
         
-        '0'     => 'You must provide a message',
-        '1'     => 'Recipent(s) must be an array',
-        '2'     => 'Misformatted Recipent(s), all of them have to be an integer',
-        '3'     => 'You must provide a receiver number',
+        '0'     => 'Bir mesaj girmelisiniz',
+        '1'     => 'Alıcılar bir dizi içinde verilmelidir',
+        '2'     => 'Alıcıların biçimleri bozuk, tümünü tam sayı olarak girmelisiniz',
+        '3'     => 'Bir alıcı numarası girmelisiniz',
         
-        '100'   => 'SMS have been sent successfully!',     
-        '101'   => 'No SMS sent',
+        '100'   => 'SMS başarı ile gönderildi!',
+        '101'   => 'Hiç SMS gönderilemedi',
         
     ),
 
-    
 );

@@ -1,18 +1,14 @@
-Laravel 5 Mutlucell SMS
+Laravel 5 ve 4 için Mutlucell SMS
 =========
-
-***LARAVEL 5 BRANCHI ŞU AN STABİL DEĞİL, HALEN GELİŞTİRME AŞAMASINDA, LARAVEL 5'E PAKET OLARAK BU BRANCHI ŞİMDİLİK EKLEMEYİN!***
-
 
 [![Latest Stable Version](https://poser.pugx.org/ardakilic/mutlucell/v/stable.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![Total Downloads](https://poser.pugx.org/ardakilic/mutlucell/downloads.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![Latest Unstable Version](https://poser.pugx.org/ardakilic/mutlucell/v/unstable.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![License](https://poser.pugx.org/ardakilic/mutlucell/license.svg)](https://packagist.org/packages/ardakilic/mutlucell)
 
-Bu paket sayesinde Laravel 5.x kullanan projelerinizde [Mutlucell](http://www.mutlucell.com.tr/) altyapısını kullanarak tekli veya çoklu sms gönderebilir, bakiye ve originator ID sorgulayabilirsiniz.
+Bu paket sayesinde Laravel 5.x veya 4.x kullanan projelerinizde [Mutlucell](http://www.mutlucell.com.tr/) altyapısını kullanarak tekli veya çoklu sms gönderebilir, bakiye ve originator ID sorgulayabilirsiniz.
 
 Uyarı, hata ve bilgilendirme için Türkçe ve de İngilizce dillerinde uyarı ve bilgi mesajlarını barındırır.
 
 
-
-Kurulum
+Kurulum (Laravel 5.x için)
 -----------
 
 * Öncelikle `composer.json` dosyanızdaki `require` kısmına aşağıdaki değeri ekleyin:

@@ -2,7 +2,7 @@
 namespace Ardakilic\Mutlucell;
 
 /**
- * Laravel 4 Mutlucell SMS
+ * Laravel 5 Mutlucell SMS
  * @license MIT License
  * @author Arda Kılıçdağı <arda@kilicdagi.com>
  * @link http://arda.pw
@@ -23,11 +23,10 @@ class Mutlucell
     
     public function __construct($app)
     {
-        $this->app    = $app;
-        $locale       = $app['config']['app.locale'];
-        $this->lang   = $app['translator']->get("mutlucell::{$locale}");
-        $this->config = $app['config']['mutlucell::config'];
-        
+        $this->app      = $app;
+        $locale         = $app['config']['app.locale'];
+        $this->lang     = $app['translator']->get("mutlucell::{$locale}");
+        $this->config   = $app['config']['mutlucell'];
         $this->senderID = $this->config['default_sender'];
     }
     
@@ -83,7 +82,6 @@ class Mutlucell
      */
     public function send($receiver, $message = '', $date = '', $senderID = '')
     {
-        
         //Checks the $message and $senderID, and initializes it
         $this->preChecks($message, $senderID);
         
