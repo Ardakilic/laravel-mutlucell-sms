@@ -14,7 +14,16 @@ use Illuminate\Support\ServiceProvider;
 class MutlucellServiceProvider extends ServiceProvider
 {
     
-
+    /**
+    * @var bool $defer Indicates if loading of the provider is deferred.
+    */
+    protected $defer = false;
+    
+    /**
+    * Boot the service provider.
+    *
+    * @return void
+    */
     public function boot()
     {
         //paylaşılacak config dosyası
