@@ -9,17 +9,17 @@
 */
 
 return array(
-    
-    //Mutlucell Authentication
-    'auth'          => array(
-        'username'  => '',
-        'password'  => '',
-    ),
-    
-    //Default sender ID, for senders (AKA Originator)
-    'default_sender'    => '',
+	
+	//Mutlucell Authentication
+	'auth'          => array(
+		'username'  => '',
+		'password'  => '',
+	),
+	
+	//Default sender ID, for senders (AKA Originator)
+	'default_sender'    => '',
 
-    //use Queue service?
-    'queue'             => false,
+	//use Queue service?
+	'queue'             => false,
 
 );

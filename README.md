@@ -86,6 +86,18 @@ $send = Mutlucell::sendMulti($kisiMesajlar);
 echo Mutlucell::parseOutput($send);
 ```
 
+Veya
+
+```php
+$kisiMesajlar = array(
+    array('05315558964' => 'Merhaba1'),
+    array('+905415589632' => 'Merhaba2'),
+    array('00905369998874' => 'Merhaba3')
+);
+$send = Mutlucell::sendMulti2($kisiMesajlar);
+echo Mutlucell::parseOutput($send);
+```
+
 ####Kalan Kontör Sorgulaması için:
 
 ```php
