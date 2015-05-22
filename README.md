@@ -16,10 +16,10 @@ Kurulum (Laravel 5.x için)
 * Öncelikle `composer.json` dosyanızdaki `require` kısmına aşağıdaki değeri ekleyin:
 
     ```json
-    "ardakilic/mutlucell": "2.0.0"
+    "ardakilic/mutlucell": "~2"
     ```
 
-    Alternatif olarak `composer require ardakilic/mutlucell:2.0.0` komutu ile de paketi ekleyebilirsiniz.
+    Alternatif olarak `composer require ardakilic/mutlucell:~2` komutu ile de paketi ekleyebilirsiniz.
 * Ardından composer paketlerinizi güncellemelisiniz. `composer update` komutu ile bunu yapabilirsiniz.
 * Şimdi de `app/config/app.php` dosyasını açın, `providers` içine en alta şunu girin:
 
