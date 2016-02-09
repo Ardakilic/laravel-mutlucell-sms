@@ -124,7 +124,6 @@ echo Mutlucell::send('05312223665', 'merhaba', '', 'diğerOriginator');
 
 Yapılacaklar
 ----
-* Guzzle entegrasyonu
 * ?
 
 Notlar
