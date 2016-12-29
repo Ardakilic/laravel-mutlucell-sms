@@ -5,7 +5,7 @@ namespace Ardakilic\Mutlucell;
  * Laravel 5 Mutlucell SMS
  * @license MIT License
  * @author Arda Kılıçdağı <arda@kilicdagi.com>
- * @link http://arda.pw
+ * @link https://arda.pw
  *
  */
 
@@ -31,6 +31,15 @@ class Mutlucell
         $this->lang = $app['translator']->get("mutlucell::{$locale}");
         $this->config = $app['config']['mutlucell'];
         $this->senderID = $this->config['default_sender'];
+
+        // To prevent missing configuration files to throw exception.
+        // Will be removed in future versions
+        if(!isset($this->config['charset'])) {
+            $this->config['charset'] = 'default';
+        }
+        if(!isset($this->config['append_unsubscribe_link'])) {
+            $this->config['append_unsubscribe_link'] = false;
+        }
     }
 
 
@@ -38,6 +47,7 @@ class Mutlucell
      * Send same bulk message to many people
      * @param $recipents array recipents
      * @param $message string message to be sent
+     * @param $date string when will the message be sent?
      * @param $senderID string originator/sender id (may be a text or number)
      * @return string status API response
      */
@@ -58,7 +68,7 @@ class Mutlucell
             $recipents = implode(', ', $recipents);
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" >';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
 
         $xml .= '<mesaj>' . '<metin>' . $this->message . '</metin>' . '<nums>' . $recipents . '</nums>' . '</mesaj>';
 
@@ -93,7 +103,7 @@ class Mutlucell
             $dateStr = ' tarih="' . $date . '"';
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" >';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
 
         $xml .= '<mesaj>' . '<metin>' . $this->message . '</metin>' . '<nums>' . $receiver . '</nums>' . '</mesaj>';
 
@@ -125,7 +135,7 @@ class Mutlucell
             $dateStr = ' tarih="' . $date . '"';
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" >';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
 
         foreach ($reciversMessage as $eachMessageBlock) {
 
@@ -165,7 +175,7 @@ class Mutlucell
             $dateStr = ' tarih="' . $date . '"';
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" >';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
 
         foreach ($reciversMessage as $number => $message) {
             $xml .= '<mesaj>' . '<metin>' . $message . '</metin>' . '<nums>' . $number . '</nums>' . '</mesaj>';
@@ -297,7 +307,7 @@ class Mutlucell
 
             return false;
 
-        //returns from Mutlucell
+            //returns from Mutlucell
         } elseif (preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
 
             //returned output is formatted like $ID#STATUS
@@ -311,7 +321,7 @@ class Mutlucell
                 return true;
             }
 
-        //Unknown error
+            //Unknown error
         } else {
             return false;
         }

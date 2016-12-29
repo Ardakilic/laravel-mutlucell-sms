@@ -4,17 +4,17 @@
  * Laravel 5 Mutlucell SMS
  * @license MIT License
  * @author Arda Kılıçdağı <arda@kilicdagi.com>
- * @link http://arda.pw
+ * @link https://arda.pw
  *
  */
 
-return array(
+return [
 
     //Mutlucell Authentication
-    'auth' => array(
+    'auth' => [
         'username' => '',
         'password' => '',
-    ),
+    ],
 
     //Default sender ID, for senders (AKA Originator)
     'default_sender' => '',
@@ -22,4 +22,10 @@ return array(
     //use Queue service?
     'queue' => false,
 
-);
+    // SMS Charset
+    'charset' => 'default', // Values are: default, turkish, unicode
+
+    //Append Unsubscribe text and link for receivers
+    'append_ubsubscribe_link' => false,
+
+];
