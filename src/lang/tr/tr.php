@@ -3,12 +3,12 @@
 /**
  * Laravel 4 Mutlucell SMS
  * @license MIT License
- * @author Arda Kılıçdağı <ardakilicdagi@gmail.com>
- * @link http://arda.pw
+ * @author Arda Kılıçdağı <arda@kilicdagi.com>
+ * @link https://arda.pw
  *
-*/
+ */
 
-return array (
+return array(
   
         
     //Paket Raporları
@@ -51,7 +51,7 @@ return array (
         '2'     => 'Misformatted Recipent(s), all of them have to be an integer',
         '3'     => 'You must provide a receiver number',
         
-        '100'   => 'SMS have been sent successfully!',     
+        '100'   => 'SMS have been sent successfully!',
         '101'   => 'No SMS sent',
         
     ),

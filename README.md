@@ -3,22 +3,23 @@ Laravel Mutlucell SMS
 
 [![Latest Stable Version](https://poser.pugx.org/ardakilic/mutlucell/v/stable.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![Total Downloads](https://poser.pugx.org/ardakilic/mutlucell/downloads.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![Latest Unstable Version](https://poser.pugx.org/ardakilic/mutlucell/v/unstable.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![License](https://poser.pugx.org/ardakilic/mutlucell/license.svg)](https://packagist.org/packages/ardakilic/mutlucell)
 
-Bu paket sayesinde Laravel 4.x kullanan projelerinizde [Mutlucell](http://www.mutlucell.com.tr/) altyapısını kullanarak tekli veya çoklu sms gönderebilir, bakiye ve originator ID sorgulayabilirsiniz.
+Bu paket sayesinde Laravel 4.x ve 5.x kullanan projelerinizde [Mutlucell](http://www.mutlucell.com.tr/) altyapısını kullanarak tekli veya çoklu sms gönderebilir, bakiye ve originator ID sorgulayabilirsiniz.
 
 Uyarı, hata ve bilgilendirme için Türkçe ve de İngilizce dillerinde uyarı ve bilgi mesajlarını barındırır.
-
 
 
 Kurulum
 -----------
 
-* Öncelikle `composer.json` dosyanızdaki `require` kısmına aşağıdaki değeri ekleyin:
+### Bu branch ve sürüm (l4, 1.x) Laravel 4 içindir, eğer Laravel 5'te kullanacaksanız sunumlar sayfasından veya master branchından sürüm 2'yi incelemelisiniz.
+
+* Öncelikle Laravel 4'te kullanacaksanız `composer.json` dosyanızdaki `require` kısmına aşağıdaki değeri ekleyin:
 
     ```json
-    "ardakilic/mutlucell": "dev-master"
+    "ardakilic/mutlucell": "~1"
     ```
 
-    Alternatif olarak `composer require ardakilic/mutlucell:dev-master` komutu ile de paketi ekleyebilirsiniz.
+    Alternatif olarak `composer require ardakilic/mutlucell:~1` komutu ile de paketi ekleyebilirsiniz.
 * Ardından composer paketlerinizi güncellemelisiniz. `composer update` komutu ile bunu yapabilirsiniz.
 * Şimdi de `app/config/app.php` dosyasını açın, `providers` içine en alta şunu girin:
 
@@ -85,6 +86,18 @@ $send = Mutlucell::sendMulti($kisiMesajlar);
 echo Mutlucell::parseOutput($send);
 ```
 
+Veya
+
+```php
+$kisiMesajlar = array(
+    array('05315558964' => 'Merhaba1'),
+    array('+905415589632' => 'Merhaba2'),
+    array('00905369998874' => 'Merhaba3')
+);
+$send = Mutlucell::sendMulti2($kisiMesajlar);
+echo Mutlucell::parseOutput($send);
+```
+
 ####Kalan Kontör Sorgulaması için:
 
 ```php
@@ -116,9 +129,21 @@ Yapılacaklar
 
 Notlar
 ----
-22 Temmuz 2014'den önce kurulum gerçekleştirdiyseniz config dosyasını ortama yeniden paylaşmalısınız
+* 29 Aralık 216'dan önce kurulum gerçekleştirdiyseniz config dosyanıza 2 değer eklemeniz lazım:
+
+```php
+// SMS Charset
+'charset' => 'default', // Values are: default, turkish, unicode
+
+//Append Unsubscribe text and link for receivers
+'append_ubsubscribe_link' => false,
+```
+
+Bu 2 değer SMS gönderim karakter dilini ve de sms'lerin sonuna gelecek olan "sms aboneliğinden çık" linkini barındırmakta.
+
+* 22 Temmuz 2014'den önce kurulum gerçekleştirdiyseniz config dosyasını ortama yeniden paylaşmalısınız
 
 Lisans
 ----
 
-Mu yazılım paketi MIT lisansı ile lisanslanmıştır.
+Bu yazılım paketi MIT lisansı ile lisanslanmıştır.

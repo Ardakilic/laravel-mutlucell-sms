@@ -4,8 +4,8 @@ namespace Ardakilic\Mutlucell\Facades;
 /**
  * Laravel 4 Mutlucell SMS
  * @license MIT License
- * @author Arda Kılıçdağı <ardakilicdagi@gmail.com>
- * @link http://arda.pw
+ * @author Arda Kılıçdağı <arda@kilicdagi.com>
+ * @link https://arda.pw
  *
  */
 
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Facade;
 
 class Mutlucell extends Facade
 {
-    
+
     /**
      * Get the registered name of the component.
      *
@@ -23,5 +23,4 @@ class Mutlucell extends Facade
     {
         return 'mutlucell';
     }
-    
 }
