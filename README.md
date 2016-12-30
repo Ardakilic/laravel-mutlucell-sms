@@ -136,7 +136,7 @@ Notlar
 'charset' => 'default', // Values are: default, turkish, unicode
 
 //Append Unsubscribe text and link for receivers
-'append_ubsubscribe_link' => false,
+'append_unsubscribe_link' => false,
 ```
 
 Bu 2 değer SMS gönderim karakter dilini ve de sms'lerin sonuna gelecek olan "sms aboneliğinden çık" linkini barındırmakta.
