@@ -46,7 +46,6 @@ class MutlucellServiceProvider extends ServiceProvider
         $this->app['mutlucell'] = $this->app->share(function ($app) {
             return new Mutlucell($app);
         });
-
     }
 
     /**
@@ -58,6 +57,4 @@ class MutlucellServiceProvider extends ServiceProvider
     {
         return ['mutlucell'];
     }
-
-
 }

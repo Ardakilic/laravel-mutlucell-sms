@@ -15,7 +15,6 @@ use Queue;
 
 class Mutlucell
 {
-
     protected $app;
     protected $config;
     protected $lang;
@@ -34,10 +33,10 @@ class Mutlucell
 
         // To prevent missing configuration files to throw exception.
         // Will be removed in future versions
-        if(!isset($this->config['charset'])) {
+        if (!isset($this->config['charset'])) {
             $this->config['charset'] = 'default';
         }
-        if(!isset($this->config['append_unsubscribe_link'])) {
+        if (!isset($this->config['append_unsubscribe_link'])) {
             $this->config['append_unsubscribe_link'] = false;
         }
     }
@@ -75,7 +74,6 @@ class Mutlucell
         $xml .= '</smspack>';
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
-
     }
 
     /**
@@ -110,7 +108,6 @@ class Mutlucell
         $xml .= '</smspack>';
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
-
     }
 
 
@@ -138,19 +135,15 @@ class Mutlucell
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
 
         foreach ($reciversMessage as $eachMessageBlock) {
-
             $number = $eachMessageBlock[0];
             $message = $eachMessageBlock[1];
 
             $xml .= '<mesaj>' . '<metin>' . $message . '</metin>' . '<nums>' . $number . '</nums>' . '</mesaj>';
-
         }
 
         $xml .= '</smspack>';
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
-
-
     }
 
 
@@ -184,7 +177,6 @@ class Mutlucell
         $xml .= '</smspack>';
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
-
     }
 
 
@@ -195,7 +187,6 @@ class Mutlucell
      */
     public function checkBalance()
     {
-
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smskredi ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '" />';
 
         $response = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtcrdtex');
@@ -203,7 +194,6 @@ class Mutlucell
         //Data will be like $1986.0,
         //since 1st character is $, and it is float (srsly, why?) we will strip it and make it integer
         return intval(substr($response, 1));
-
     }
 
     /**
@@ -212,7 +202,6 @@ class Mutlucell
      */
     public function listOriginators()
     {
-
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smsorig ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '" />';
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtorgex');
@@ -228,7 +217,6 @@ class Mutlucell
     {
         //if error code is returned, api OR the app will return an integer error code
         if ($this->isnum($output)) {
-
             switch ($output) {
 
                 case 20:
@@ -292,7 +280,6 @@ class Mutlucell
         } else {
             return $output;
         }
-
     }
 
     /**
@@ -304,7 +291,6 @@ class Mutlucell
     {
         //if error code is returned, API will return an integer error code
         if ($this->isnum($output)) {
-
             return false;
 
             //returns from Mutlucell
@@ -358,24 +344,19 @@ class Mutlucell
      */
     private function postXML($xml, $url)
     {
-
         if ($this->config['queue']) {
-
             Queue::push(function () use ($xml, $url) {
                 $client = new Client();
                 $request = new Request('POST', $url, ['Content-Type' => 'text/xml; charset=UTF8'], $xml);
                 $response = $client->send($request);
                 return $response->getBody()->getContents();
             });
-
         } else {
-
             $client = new Client();
             $request = new Request('POST', $url, ['Content-Type' => 'text/xml; charset=UTF8'], $xml);
             $response = $client->send($request);
             return $response->getBody()->getContents();
         }
-
     }
 
 
@@ -394,5 +375,4 @@ class Mutlucell
             return false;
         }
     }
-
 }

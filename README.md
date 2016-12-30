@@ -5,7 +5,7 @@ Laravel 5 ve 4 için Mutlucell SMS
 
 Bu paket sayesinde Laravel 5.x veya 4.x kullanan projelerinizde [Mutlucell](http://www.mutlucell.com.tr/) altyapısını kullanarak tekli veya çoklu sms gönderebilir, bakiye ve originator ID sorgulayabilirsiniz. 
 
-_Bu branch Laravel 5 içindir. Eğer bu paketi Laravel 4 üzerinde kullanmak istiyorsanız [1.0.0 sürümünü](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/1.0.0), `"ardakilic/mutlucell": "1.0.0"` etiketi ile kullanmalısınız.
+_Bu branch Laravel 5 içindir. Eğer bu paketi Laravel 4 üzerinde kullanmak istiyorsanız *1.x sürümünü*, `"ardakilic/mutlucell": "~1"` etiketi ile kullanmalısınız.
 
 Uyarı, hata ve bilgilendirme için Türkçe ve de İngilizce dillerinde uyarı ve bilgi mesajlarını barındırır.
 
@@ -37,6 +37,8 @@ Kurulum (Laravel 5.x için)
     php artisan vendor:publish
     ```
 * `config/mutlucell.php` dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini, ve de diğer ayarları doldurmalısınız.
+
+**Laravel 4.x sürümünde kullanım bilgisi için [ilgili branch'ın README.md dosyasına](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/l4) bakmalısınız.**
 
 Kullanım
 -------------
