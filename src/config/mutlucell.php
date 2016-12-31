@@ -26,6 +26,6 @@ return [
     'charset' => 'default', // Values are: default, turkish, unicode
 
     //Append Unsubscribe text and link for receivers
-    'append_ubsubscribe_link' => false,
+    'append_unsubscribe_link' => false,
 
 ];
