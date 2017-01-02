@@ -67,7 +67,7 @@ class Mutlucell
             $recipents = implode(', ', $recipents);
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
 
         $xml .= '<mesaj>' . '<metin>' . $this->message . '</metin>' . '<nums>' . $recipents . '</nums>' . '</mesaj>';
 
@@ -101,7 +101,7 @@ class Mutlucell
             $dateStr = ' tarih="' . $date . '"';
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
 
         $xml .= '<mesaj>' . '<metin>' . $this->message . '</metin>' . '<nums>' . $receiver . '</nums>' . '</mesaj>';
 
@@ -132,7 +132,7 @@ class Mutlucell
             $dateStr = ' tarih="' . $date . '"';
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
 
         foreach ($reciversMessage as $eachMessageBlock) {
             $number = $eachMessageBlock[0];
@@ -168,7 +168,7 @@ class Mutlucell
             $dateStr = ' tarih="' . $date . '"';
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
 
         foreach ($reciversMessage as $number => $message) {
             $xml .= '<mesaj>' . '<metin>' . $message . '</metin>' . '<nums>' . $number . '</nums>' . '</mesaj>';
@@ -194,6 +194,29 @@ class Mutlucell
         //Data will be like $1986.0,
         //since 1st character is $, and it is float (srsly, why?) we will strip it and make it integer
         return intval(substr($response, 1));
+    }
+
+    /**
+     * Deletes phone number(s) from the blacklist
+     * @param $phoneNumbers array|string The phone numbers
+     * @return string
+     */
+    public function deleteBlackList($phoneNumbers = null)
+    {
+        //If the <nums> parameter is blank, all users are removed from blacklist as Mutlucell Api says
+        if ($phoneNumbers === null) {
+            $phoneNumbers = '';
+        }
+
+        if (is_array($phoneNumbers)) {
+            $phoneNumbers = implode(', ', $phoneNumbers);
+        }
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<dltblacklist ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '">';
+        $xml .= '<nums>' . $phoneNumbers . '</nums>';
+        $xml .= '</dltblacklist>';
+
+        return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/dltblklst');
     }
 
     /**
@@ -241,6 +264,10 @@ class Mutlucell
 
                 case 25:
                     return $this->lang['reports']['25'];
+                    break;
+
+                case 30:
+                    return $this->lang['reports']['30'];
                     break;
 
 
