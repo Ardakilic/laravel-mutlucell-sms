@@ -179,21 +179,27 @@ class Mutlucell
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
     }
 
-
     /**
-     * Balance Checker
-     * Shows how much SMS you have left
-     * @return integer number of SMSes left for the account
+     * Adds phone number(s) to the blacklist
+     * @param $phoneNumbers array|string The phone numbers
+     * @return string status API response
      */
-    public function checkBalance()
+    public function addBlacklist($phoneNumbers = null)
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smskredi ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '" />';
+        //If the <nums> parameter is blank, all users are removed from blacklist as Mutlucell Api says
+        if ($phoneNumbers === null) {
+            $phoneNumbers = '';
+        }
 
-        $response = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtcrdtex');
+        if (is_array($phoneNumbers)) {
+            $phoneNumbers = implode(', ', $phoneNumbers);
+        }
 
-        //Data will be like $1986.0,
-        //since 1st character is $, and it is float (srsly, why?) we will strip it and make it integer
-        return intval(substr($response, 1));
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<addblacklist ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '">';
+        $xml .= '<nums>' . $phoneNumbers . '</nums>';
+        $xml .= '</addblacklist>';
+
+        return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/addblklst');
     }
 
     /**
@@ -217,6 +223,22 @@ class Mutlucell
         $xml .= '</dltblacklist>';
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/dltblklst');
+    }
+
+    /**
+     * Balance Checker
+     * Shows how much SMS you have left
+     * @return integer number of SMSes left for the account
+     */
+    public function checkBalance()
+    {
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smskredi ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '" />';
+
+        $response = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtcrdtex');
+
+        //Data will be like $1986.0,
+        //since 1st character is $, and it is float (srsly, why?) we will strip it and make it integer
+        return intval(substr($response, 1));
     }
 
     /**

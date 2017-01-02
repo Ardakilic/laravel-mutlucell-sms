@@ -100,7 +100,38 @@ $send = Mutlucell::sendMulti2($kisiMesajlar);
 var_dump(Mutlucell::parseOutput($send));
 ```
 
-####Kullanıcıyı Kara Listeden Çıkartmak İçin
+####Bir veya birden Fazla Kullanıcıyı Kara Listeye Eklemek İçin
+
+```php
+$sil = Mutlucell::addBlacklist('00905312345678');
+var_dump(Mutlucell::parseOutput($sil));
+```
+
+Veya
+
+```php
+$sil = Mutlucell::addBlacklist('00905312345678, +905351114478, 05369998874, 5315558896');
+var_dump(Mutlucell::parseOutput($sil));
+```
+
+Veya
+
+```php
+$kisiler = ['00905312345678', '+905351114478', '05369998874', '5315558896'];
+$sil = Mutlucell::addBlacklist($kisiler);
+var_dump(Mutlucell::parseOutput($sil));
+```
+
+
+####Bir veya Birden Fazla Kullanıcıyı Kara Listeden Çıkartmak İçin
+
+```php
+$sil = Mutlucell::deleteBlackList('00905312345678');
+var_dump(Mutlucell::parseOutput($sil));
+```
+
+Veya
+
 
 ```php
 $sil = Mutlucell::deleteBlackList('00905312345678, +905351114478, 05369998874, 5315558896');
@@ -120,7 +151,6 @@ Eğer tüm kullanıcıları kara listeden çıkartmak istiyorsanız parametre bo
 ```php
 $sil = Mutlucell::deleteBlackList();
 var_dump(Mutlucell::parseOutput($sil));
-```
 
 
 ####Kalan Kontör Sorgulaması için:
