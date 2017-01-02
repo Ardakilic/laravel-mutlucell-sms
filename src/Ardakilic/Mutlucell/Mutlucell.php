@@ -159,6 +159,29 @@ class Mutlucell
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
     }
 
+    /**
+     * Deletes phone number(s) from the blacklist
+     * @param $phoneNumbers array|string The phone numbers
+     * @return string
+     */
+    public function deleteBlackList($phoneNumbers = null)
+    {
+        //If the <nums> parameter is blank, all users are removed from blacklist as Mutlucell Api says
+        if ($phoneNumbers === null) {
+            $phoneNumbers = '';
+        }
+
+        if (is_array($phoneNumbers)) {
+            $phoneNumbers = implode(', ', $phoneNumbers);
+        }
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<dltblacklist ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '">';
+        $xml .= '<nums>' . $phoneNumbers . '</nums>';
+        $xml .= '</dltblacklist>';
+
+        return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/dltblklst');
+    }
+
 
     /**
      * Balance Checker
@@ -219,6 +242,10 @@ class Mutlucell
 
                 case 25:
                     return $this->lang['reports']['25'];
+                    break;
+
+                case 30:
+                    return $this->lang['reports']['30'];
                     break;
 
 
