@@ -98,8 +98,38 @@ $send = Mutlucell::sendMulti2($kisiMesajlar);
 echo Mutlucell::parseOutput($send);
 ```
 
+####Bir veya birden Fazla Kullanıcıyı Kara Listeye Eklemek İçin
 
-####Kullanıcıyı Kara Listeden Çıkartmak İçin
+```php
+$sil = Mutlucell::addBlacklist('00905312345678');
+var_dump(Mutlucell::parseOutput($sil));
+```
+
+Veya
+
+```php
+$sil = Mutlucell::addBlacklist('00905312345678, +905351114478, 05369998874, 5315558896');
+var_dump(Mutlucell::parseOutput($sil));
+```
+
+Veya
+
+```php
+$kisiler = ['00905312345678', '+905351114478', '05369998874', '5315558896'];
+$sil = Mutlucell::addBlacklist($kisiler);
+var_dump(Mutlucell::parseOutput($sil));
+```
+
+
+####Bir veya Birden Fazla Kullanıcıyı Kara Listeden Çıkartmak İçin
+
+```php
+$sil = Mutlucell::deleteBlackList('00905312345678');
+var_dump(Mutlucell::parseOutput($sil));
+```
+
+Veya
+
 
 ```php
 $sil = Mutlucell::deleteBlackList('00905312345678, +905351114478, 05369998874, 5315558896');

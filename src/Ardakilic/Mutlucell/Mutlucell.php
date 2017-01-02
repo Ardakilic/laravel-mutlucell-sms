@@ -160,9 +160,32 @@ class Mutlucell
     }
 
     /**
+     * Adds phone number(s) to the blacklist
+     * @param $phoneNumbers array|string The phone numbers
+     * @return string status API response
+     */
+    public function addBlacklist($phoneNumbers = null)
+    {
+        //If the <nums> parameter is blank, all users are removed from blacklist as Mutlucell Api says
+        if ($phoneNumbers === null) {
+            $phoneNumbers = '';
+        }
+
+        if (is_array($phoneNumbers)) {
+            $phoneNumbers = implode(', ', $phoneNumbers);
+        }
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<addblacklist ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '">';
+        $xml .= '<nums>' . $phoneNumbers . '</nums>';
+        $xml .= '</addblacklist>';
+
+        return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/addblklst');
+    }
+
+    /**
      * Deletes phone number(s) from the blacklist
      * @param $phoneNumbers array|string The phone numbers
-     * @return string
+     * @return string status API response
      */
     public function deleteBlackList($phoneNumbers = null)
     {
