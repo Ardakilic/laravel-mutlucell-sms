@@ -28,7 +28,15 @@ class Mutlucell
         $this->app = $app;
         $locale = $app['config']['app.locale'];
         $this->lang = $app['translator']->get("mutlucell::{$locale}");
-        $this->config = $app['config']['mutlucell'];
+        $this->setConfig($app['config']['mutlucell']);
+    }
+
+    /**
+     * @param array $config
+     */
+    public function setConfig(array $config)
+    {
+        $this->config = $config;
         $this->senderID = $this->config['default_sender'];
 
         // To prevent missing configuration files to throw exception.
@@ -40,7 +48,6 @@ class Mutlucell
             $this->config['append_unsubscribe_link'] = false;
         }
     }
-
 
     /**
      * Send same bulk message to many people
@@ -120,7 +127,6 @@ class Mutlucell
      */
     public function sendMulti($reciversMessage, $date = '', $senderID = '')
     {
-
         //Pre-checks act1
         if ($senderID == null || !strlen(trim($senderID))) {
             $senderID = $this->config['default_sender'];
@@ -156,7 +162,6 @@ class Mutlucell
      */
     public function sendMulti2($reciversMessage, $date = '', $senderID = '')
     {
-
         //Pre-checks act1
         if ($senderID == null || !strlen(trim($senderID))) {
             $senderID = $this->config['default_sender'];
