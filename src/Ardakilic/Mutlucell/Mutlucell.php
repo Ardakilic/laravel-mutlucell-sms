@@ -33,6 +33,8 @@ class Mutlucell
 
     /**
      * @param array $config
+     *
+     * @return $this
      */
     public function setConfig(array $config)
     {
@@ -47,6 +49,8 @@ class Mutlucell
         if (!isset($this->config['append_unsubscribe_link'])) {
             $this->config['append_unsubscribe_link'] = false;
         }
+
+        return $this;
     }
 
     /**
