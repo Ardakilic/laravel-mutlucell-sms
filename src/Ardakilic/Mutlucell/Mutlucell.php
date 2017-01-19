@@ -32,8 +32,10 @@ class Mutlucell
     }
 
     /**
-     * @param array $config
+     * This method allows user to change configuration on-the-fly
      *
+     * @param array $config
+     * @throws \Exception if auth parameter or originator is not set
      * @return $this
      */
     public function setConfig(array $config)
@@ -41,15 +43,29 @@ class Mutlucell
         $this->config = $config;
         $this->senderID = $this->config['default_sender'];
 
-        // To prevent missing configuration files to throw exception.
-        // Will be removed in future versions
+        // The user may have called setConfig() manually,
+        // and the array may have missing arguments.
+        // So, we're checking whether they are set, and filling them if not set
+        // Critical ones will throw exceptions, non-critical ones will set default values
+        if (!isset($this->config['auth'])) {
+            throw new \Exception($this->lang['exceptions']['0']);
+        } else {
+            if (!isset($this->config['auth']['username']) || !isset($this->config['auth']['username'])) {
+                throw new \Exception($this->lang['exceptions']['1']);
+            }
+        }
+        if (!isset($this->config['default_sender'])) {
+            throw new \Exception($this->lang['exceptions']['2']);
+        }
+        if (!isset($this->config['queue'])) {
+            $this->config['queue'] = false;
+        }
         if (!isset($this->config['charset'])) {
             $this->config['charset'] = 'default';
         }
         if (!isset($this->config['append_unsubscribe_link'])) {
             $this->config['append_unsubscribe_link'] = false;
         }
-
         return $this;
     }
 

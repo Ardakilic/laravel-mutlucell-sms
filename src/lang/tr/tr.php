@@ -8,10 +8,10 @@
  *
  */
 
-return array(
+return [
 
     //Paket Raporları
-    'reports' => array(
+    'reports' => [
 
         '20' => 'Post edilen xml eksik veya hatalı.',
         '21' => 'Kullanılan originatöre sahip değilsiniz (Gönderen ID)',
@@ -23,10 +23,10 @@ return array(
 
         '999' => 'Bilinmeyen hata',
 
-    ),
+    ],
 
     //Sms Gönderim Raporları
-    'sms' => array(
+    'sms' => [
 
         '0' => 'Gönderilemedi',
         '1' => 'İşleniyor',
@@ -40,10 +40,10 @@ return array(
         '12' => 'Hat Yok',
         '13' => 'Hatalı',
 
-    ),
+    ],
 
     //App-specific
-    'app' => array(
+    'app' => [
 
         '0' => 'Bir mesaj girmelisiniz',
         '1' => 'Alıcılar bir dizi içinde verilmelidir',
@@ -53,6 +53,15 @@ return array(
         '100' => 'SMS başarı ile gönderildi!',
         '101' => 'Hiç SMS gönderilemedi',
 
-    ),
+    ],
 
-);
+    //Exception Hata Mesajları
+    'exceptions' => [
+
+        '0' => 'Mutlucell auth parametresi ayarlarda tanımlanmamış!',
+        '1' => 'Mutlucell Auth User and Password are not set correctly!',
+        '2' => 'Mutlucell Default sender (originator) is not set!',
+
+    ],
+
+];

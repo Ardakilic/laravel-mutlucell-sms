@@ -8,10 +8,10 @@
  *
  */
 
-return array(
+return [
 
-    //Paket Raporları
-    'reports' => array(
+    //Bundle reports
+    'reports' => [
 
         '20' => 'The xml that has been posted is misformatted.',
         '21' => 'You don\'t own the originator (sender ID)',
@@ -23,10 +23,10 @@ return array(
 
         '999' => 'Unknwon error',
 
-    ),
+    ],
 
-    //Sms Gönderim Raporları
-    'sms' => array(
+    //Sms Delivery Reports
+    'sms' => [
 
         '0' => 'Could not be sent',
         '1' => 'Processing',
@@ -40,10 +40,10 @@ return array(
         '12' => 'No Network',
         '13' => 'Error',
 
-    ),
+    ],
 
     //App-specific
-    'app' => array(
+    'app' => [
 
         '0' => 'You must provide a message',
         '1' => 'Recipent(s) must be an array',
@@ -53,6 +53,15 @@ return array(
         '100' => 'SMS have been sent successfully!',
         '101' => 'No SMS sent',
 
-    ),
+    ],
 
-);
+    //Exception Messages
+    'exceptions' => [
+
+        '0' => 'Mutlucell auth parameter is not set in the config!',
+        '1' => 'Mutlucell Auth User and Password are not set correctly!',
+        '2' => 'Mutlucell Default sender (originator) is not set!',
+
+    ],
+
+];
