@@ -151,6 +151,24 @@ $sil = Mutlucell::deleteBlackList();
 var_dump(Mutlucell::parseOutput($sil));
 ```
 
+####Farklı bir ayar dosyası ile SMS göndermek için
+```php
+$gonder = Mutlucell::setConfig(Config::get('app.baskaConfig'))->send('05312345678', 'Merhaba');
+```
+
+Hatta;
+
+```php
+$sms = Mutlucell::setConfig([
+    'auth' => [
+        'username' => 'baskauser',
+        'password' => 'baskaparola',
+    ],
+    'default_sender' => 'baskaoriginator',
+]);
+
+$sms->send('05312345678', 'Merhaba');
+```
 
 ####Kalan Kontör Sorgulaması için:
 

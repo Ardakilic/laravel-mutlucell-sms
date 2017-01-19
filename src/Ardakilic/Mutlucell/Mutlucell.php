@@ -26,17 +26,46 @@ class Mutlucell
         $this->app = $app;
         $locale = $app['config']['app.locale'];
         $this->lang = $app['translator']->get("mutlucell::{$locale}");
-        $this->config = $app['config']['mutlucell::config'];
+        $this->setConfig($app['config']['mutlucell']);
+    }
+
+
+    /**
+     * This method allows user to change configuration on-the-fly
+     *
+     * @param array $config
+     * @throws \Exception if auth parameter or originator is not set
+     * @return $this
+     */
+    public function setConfig(array $config)
+    {
+        $this->config = $config;
         $this->senderID = $this->config['default_sender'];
 
-        // To prevent missing configuration files to throw exception.
-        // Will be removed in future versions
+        // The user may have called setConfig() manually,
+        // and the array may have missing arguments.
+        // So, we're checking whether they are set, and filling them if not set
+        // Critical ones will throw exceptions, non-critical ones will set default values
+        if (!isset($this->config['auth'])) {
+            throw new \Exception($this->lang['exceptions']['0']);
+        } else {
+            if (!isset($this->config['auth']['username']) || !isset($this->config['auth']['username'])) {
+                throw new \Exception($this->lang['exceptions']['1']);
+            }
+        }
+        if (!isset($this->config['default_sender'])) {
+            throw new \Exception($this->lang['exceptions']['2']);
+        }
+        if (!isset($this->config['queue'])) {
+            $this->config['queue'] = false;
+        }
         if (!isset($this->config['charset'])) {
             $this->config['charset'] = 'default';
         }
         if (!isset($this->config['append_unsubscribe_link'])) {
             $this->config['append_unsubscribe_link'] = false;
         }
+        return $this;
     }
 
 
@@ -61,7 +90,7 @@ class Mutlucell
         if (is_array($recipents)) {
             $recipents = implode(', ', $recipents);
         }
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
         $xml .= '<mesaj>' . '<metin>' . $this->message . '</metin>' . '<nums>' . $recipents . '</nums>' . '</mesaj>';
         $xml .= '</smspack>';
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
@@ -90,7 +119,7 @@ class Mutlucell
         if (strlen($date)) {
             $dateStr = ' tarih="' . $date . '"';
         }
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
 
         $xml .= '<mesaj>' . '<metin>' . $this->message . '</metin>' . '<nums>' . $receiver . '</nums>' . '</mesaj>';
         $xml .= '</smspack>';
@@ -119,7 +148,7 @@ class Mutlucell
             $dateStr = ' tarih="' . $date . '"';
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
 
         foreach ($receiversMessage as $eachMessageBlock) {
             $number = $eachMessageBlock[0];
@@ -151,7 +180,7 @@ class Mutlucell
         if (strlen($date)) {
             $dateStr = ' tarih="' . $date . '"';
         }
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="'.$this->config['charset'].'"'.($this->config['append_unsubscribe_link']?' addLinkToEnd="true"':'').'>';
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
         foreach ($receiversMessage as $number => $message) {
             $xml .= '<mesaj>' . '<metin>' . $message . '</metin>' . '<nums>' . $number . '</nums>' . '</mesaj>';
         }
