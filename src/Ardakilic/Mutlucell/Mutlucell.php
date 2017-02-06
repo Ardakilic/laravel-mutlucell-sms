@@ -26,7 +26,7 @@ class Mutlucell
         $this->app = $app;
         $locale = $app['config']['app.locale'];
         $this->lang = $app['translator']->get("mutlucell::{$locale}");
-        $this->setConfig($app['config']['mutlucell']);
+        $this->setConfig($app['config']['mutlucell::config']);
     }
 
 
