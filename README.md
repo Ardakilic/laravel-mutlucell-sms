@@ -151,8 +151,7 @@ Eğer tüm kullanıcıları kara listeden çıkartmak istiyorsanız parametre bo
 ```php
 $sil = Mutlucell::deleteBlackList();
 var_dump(Mutlucell::parseOutput($sil));
-
-
+```
 
 ####Farklı bir ayar dosyası ile SMS göndermek için
 ```php
@@ -204,7 +203,7 @@ Yapılacaklar
 
 Notlar
 ----
-* 29 Aralık 216'dan önce kurulum gerçekleştirdiyseniz config dosyanıza 2 değer eklemeniz lazım:
+* 29 Aralık 2016'dan önce kurulum gerçekleştirdiyseniz config dosyanıza 2 değer eklemeniz lazım:
 
 ```php
 // SMS Charset
