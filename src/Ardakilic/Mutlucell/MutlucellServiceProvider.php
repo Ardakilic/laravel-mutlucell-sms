@@ -43,7 +43,7 @@ class MutlucellServiceProvider extends ServiceProvider
     public function register()
     {
         //register edelim
-        $this->app['mutlucell'] = $this->app->share(function ($app) {
+        $this->app['mutlucell'] = $this->app->singleton(function ($app) {
             return new Mutlucell($app);
         });
     }
