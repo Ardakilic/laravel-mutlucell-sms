@@ -21,7 +21,7 @@ Kurulum (Laravel 5.x için)
 
     Alternatif olarak `composer require ardakilic/mutlucell:~2` komutu ile de paketi ekleyebilirsiniz.
 * Ardından eğer `composer.json dosyasını elinizle güncellediyseniz kodları projenize dahil etmek için Composer paketlerinizi güncellemelisiniz. `composer update` komutu ile bunu yapabilirsiniz.
-* Şimdi de `app/config/app.php` dosyasını açın, `providers` dizisi içine en alta şunu girin: 
+* Şimdi de `app/config/app.php` dosyasını açın, `providers` dizisi içine en alta şunu girin:
 
     ```php
     Ardakilic\Mutlucell\MutlucellServiceProvider::class,
@@ -40,7 +40,7 @@ Kurulum (Laravel 5.x için)
     ```shell
     php artisan vendor:publish
     ```
-* `config/mutlucell.php` dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini, ve de diğer ayarları doldurmalısınız.
+* `config/mutlucell.php` dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini, ve de diğer ayarları doldurmalısınız. 
 
 **Laravel 4.x sürümünde kullanım bilgisi için [ilgili branch'ın README.md dosyasına](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/l4) bakmalısınız.**
 
