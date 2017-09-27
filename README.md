@@ -21,16 +21,20 @@ Kurulum (Laravel 5.x için)
 
     Alternatif olarak `composer require ardakilic/mutlucell:~2` komutu ile de paketi ekleyebilirsiniz.
 * Ardından eğer `composer.json dosyasını elinizle güncellediyseniz kodları projenize dahil etmek için Composer paketlerinizi güncellemelisiniz. `composer update` komutu ile bunu yapabilirsiniz.
-* Şimdi de `app/config/app.php` dosyasını açın, `providers` dizisi içine en alta şunu girin:
+* Şimdi de `app/config/app.php` dosyasını açın, `providers` dizisi içine en alta şunu girin: 
 
     ```php
     Ardakilic\Mutlucell\MutlucellServiceProvider::class,
     ```
+    _(Laravel 5.5 ve sonrası için gerekli değildir)_
+    
 * Şimdi yine aynı dosyada `aliases` dizisi altına şu değeri girin:
 
     ```php
     'Mutlucell' => Ardakilic\Mutlucell\Facades\Mutlucell::class,
     ```
+    _(Laravel 5.5 ve sonrası için gerekli değildir)_
+    
 * Şimdi de environment'ınıza konfigürasyon dosyasını paylaşmalısınız. Bunun için aşağıdaki komutu çalıştırın:
 
     ```shell
