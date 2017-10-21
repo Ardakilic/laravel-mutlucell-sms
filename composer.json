@@ -26,5 +26,15 @@
       "Ardakilic\\Mutlucell\\": "src/"
     }
   },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Ardakilic\\Mutlucell\\MutlucellServiceProvider"
+      ],
+      "aliases": {
+        "Mutlucell": "Ardakilic\\Mutlucell\\Facades\\Mutlucell"
+      }
+    }
+  },
   "minimum-stability": "stable"
 }

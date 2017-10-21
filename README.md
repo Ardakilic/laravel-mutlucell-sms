@@ -26,17 +26,21 @@ Kurulum (Laravel 5.x için)
     ```php
     Ardakilic\Mutlucell\MutlucellServiceProvider::class,
     ```
+    _(Laravel 5.5 ve sonrası için gerekli değildir)_
+    
 * Şimdi yine aynı dosyada `aliases` dizisi altına şu değeri girin:
 
     ```php
     'Mutlucell' => Ardakilic\Mutlucell\Facades\Mutlucell::class,
     ```
+    _(Laravel 5.5 ve sonrası için gerekli değildir)_
+    
 * Şimdi de environment'ınıza konfigürasyon dosyasını paylaşmalısınız. Bunun için aşağıdaki komutu çalıştırın:
 
     ```shell
     php artisan vendor:publish
     ```
-* `config/mutlucell.php` dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini, ve de diğer ayarları doldurmalısınız.
+* `config/mutlucell.php` dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini, ve de diğer ayarları doldurmalısınız. 
 
 **Laravel 4.x sürümünde kullanım bilgisi için [ilgili branch'ın README.md dosyasına](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/l4) bakmalısınız.**
 

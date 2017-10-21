@@ -12,12 +12,12 @@ return [
 
     //Mutlucell Authentication
     'auth' => [
-        'username' => '',
-        'password' => '',
+        'username' => env('MUTLUCELL_USERNAME', ''),
+        'password' => env('MUTLUCELL_PASSWORD',''),
     ],
 
     //Default sender ID, for senders (AKA Originator)
-    'default_sender' => '',
+    'default_sender' => env('MUTLUCELL_DEFAULT_SENDER', ''),
 
     //use Queue service?
     'queue' => false,
