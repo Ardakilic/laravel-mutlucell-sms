@@ -42,6 +42,8 @@ Kurulum (Laravel 5.x için)
     ```
 * `config/mutlucell.php` dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini, ve de diğer ayarları doldurmalısınız. 
 
+Ayrıca environment dosyanıza `MUTLUCELL_USERNAME`, `MUTLUCELL_PASSWORD` ve `MUTLUCELL_DEFAULT_SENDER` değerlerini de doldurarak config dosyanızı besleyebilirsiniz.
+
 **Laravel 4.x sürümünde kullanım bilgisi için [ilgili branch'ın README.md dosyasına](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/l4) bakmalısınız.**
 
 Kullanım

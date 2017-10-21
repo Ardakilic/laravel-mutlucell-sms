@@ -411,7 +411,7 @@ class Mutlucell
     }
 
     /**
-     * CURL XML post sending method
+     * XML post sending method
      * @param string $xml formatted string
      * @return string API Status
      *

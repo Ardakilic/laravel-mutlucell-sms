@@ -26,12 +26,12 @@ class MutlucellServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //paylaşılacak config dosyası
+        //the configuration file to be shared
         $this->publishes([
             __DIR__ . '/../../config/mutlucell.php' => config_path('mutlucell.php'),
         ], 'config');
 
-        //paylaşılacak dil dosyaları
+        //the translations file to be share
         $this->loadTranslationsFrom(__DIR__ . '/../../lang', 'mutlucell');
     }
 
@@ -42,7 +42,6 @@ class MutlucellServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //register edelim
         $this->app->singleton('mutlucell', function ($app) {
             return new Mutlucell($app);
         });
@@ -51,7 +50,7 @@ class MutlucellServiceProvider extends ServiceProvider
     /**
      * Get the services provided by the provider.
      *
-     * @return string
+     * @return array
      */
     public function provides()
     {
