@@ -50,7 +50,7 @@ class Mutlucell
         if (!isset($this->config['auth'])) {
             throw new \Exception($this->lang['exceptions']['0']);
         } else {
-            if (!isset($this->config['auth']['username']) || !isset($this->config['auth']['username'])) {
+            if (!isset($this->config['auth']['username']) || !isset($this->config['auth']['password'])) {
                 throw new \Exception($this->lang['exceptions']['1']);
             }
         }
