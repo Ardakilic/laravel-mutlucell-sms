@@ -3,13 +3,13 @@ Laravel 6, 5 ve 4 için Mutlucell SMS
 
 [![Latest Stable Version](https://poser.pugx.org/ardakilic/mutlucell/v/stable.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![Total Downloads](https://poser.pugx.org/ardakilic/mutlucell/downloads.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![Latest Unstable Version](https://poser.pugx.org/ardakilic/mutlucell/v/unstable.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![License](https://poser.pugx.org/ardakilic/mutlucell/license.svg)](https://packagist.org/packages/ardakilic/mutlucell)
 
-Bu paket sayesinde Laravel 5.x veya 4.x kullanan projelerinizde [Mutlucell](http://www.mutlucell.com.tr/) altyapısını kullanarak tekli veya çoklu sms gönderebilir, bakiye ve originator ID sorgulayabilirsiniz. 
+Bu paket sayesinde Laravel 6.x, 5.x veya 4.x kullanan projelerinizde [Mutlucell](https://www.mutlucell.com.tr/) altyapısını kullanarak tekli veya çoklu sms gönderebilir, bakiye ve originator ID sorgulayabilirsiniz. 
 
-_Bu branch Laravel 6 içindir. Eğer bu paketi Laravel 5.x üzerinde kullanmak istiyorsanız *2.x sürümünü*  `"ardakilic/mutlucell": "~2"` etiketi ile, Laravel 4 üzerinde kullanmak istiyorsanız *1.x sürümünü*, `"ardakilic/mutlucell": "~1"` etiketi ile kullanmalısınız.
+Bu branch Laravel 6 içindir. Eğer bu paketi Laravel 5.x üzerinde kullanmak istiyorsanız *2.x sürümünü*  `"ardakilic/mutlucell": "~2"` etiketi ile, Laravel 4 üzerinde kullanmak istiyorsanız *1.x sürümünü*, `"ardakilic/mutlucell": "~1"` etiketi ile kullanmalısınız.
 
 Uyarı, hata ve bilgilendirme için Türkçe ve de İngilizce dillerinde uyarı ve bilgi mesajlarını barındırır.
 
-Gereksinimler (Laravel 6.x için)
+Ekstra Bağımlılıklar (Laravel 6.x sürümü için)
 -----------
 * SimpleXML PHP Eklentisi
 
@@ -23,7 +23,7 @@ Kurulum (Laravel 6.x için)
     ```
 
     Alternatif olarak `composer require ardakilic/mutlucell:~3` komutu ile de paketi ekleyebilirsiniz.
-* Ardından eğer `composer.json dosyasını elinizle güncellediyseniz kodları projenize dahil etmek için Composer paketlerinizi güncellemelisiniz. `composer update` komutu ile bunu yapabilirsiniz.
+* Ardından eğer `composer.json` dosyasını elinizle güncellediyseniz kodları projenize dahil etmek için Composer paketlerinizi güncellemelisiniz. `composer update` komutu ile bunu yapabilirsiniz.
 * Şimdi de `config/app.php` dosyasını açın, `providers` dizisi içine en alta şunu girin:
 
     ```php
@@ -165,11 +165,12 @@ var_dump(Mutlucell::parseOutput($sil));
 ```
 
 #### Farklı bir ayar dosyası ile SMS göndermek için
+
 ```php
 $gonder = Mutlucell::setConfig(config('app.baskaConfig'))->send('05312345678', 'Merhaba');
 ```
 
-Hatta;
+Hatta
 
 ```php
 $sms = Mutlucell::setConfig([
@@ -211,13 +212,13 @@ Mutlucell::send('05312223665', 'merhaba', '', 'diğerOriginator');
 Yapılacaklar
 ----
 
-* Türkçe karakterli SMS gönderimi (charset="turkish") eklenmesi
 * Kara Listeye giren kullanıcı listesini alma metodu
+* ?
 
 Lisans
 ----
 
-Mu yazılım paketi MIT lisansı ile lisanslanmıştır.
+Bu yazılım paketi MIT lisansı ile lisanslanmıştır.
 
 Destek
 --------

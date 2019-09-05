@@ -87,6 +87,7 @@ class Mutlucell
             $smsXMLElement->addAttribute('tarih', $date);
         }
         $smsXMLElement->addAttribute('org', $this->senderID);
+        $smsXMLElement->addAttribute('charset', $this->config['charset']);
         if ($this->config['append_unsubscribe_link'] === true) {
             $smsXMLElement->addAttribute('addLinkToEnd', 'true');
         }
