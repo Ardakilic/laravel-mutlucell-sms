@@ -2,5 +2,5 @@
   "extends": [
     "config:base"
   ],
-  "baseBranches": ["master", "l4"]
+  "baseBranches": ["master", "l4", "l5"]
 }

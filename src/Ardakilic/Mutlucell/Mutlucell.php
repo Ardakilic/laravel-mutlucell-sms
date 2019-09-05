@@ -1,8 +1,9 @@
 <?php
+
 namespace Ardakilic\Mutlucell;
 
 /**
- * Laravel 5 Mutlucell SMS
+ * Laravel 6 Mutlucell SMS
  * @license MIT License
  * @author Arda Kılıçdağı <arda@kilicdagi.com>
  * @link https://arda.pw
@@ -12,6 +13,8 @@ namespace Ardakilic\Mutlucell;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use Queue;
+
+use SimpleXMLElement;
 
 class Mutlucell
 {
@@ -35,8 +38,8 @@ class Mutlucell
      * This method allows user to change configuration on-the-fly
      *
      * @param array $config
-     * @throws \Exception if auth parameter or originator is not set
      * @return $this
+     * @throws \Exception if auth parameter or originator is not set
      */
     public function setConfig(array $config)
     {
@@ -70,35 +73,59 @@ class Mutlucell
     }
 
     /**
+     * The method that creates a XML string to send to Mutlucell API
+     * @param array $messages the messages array to be dispatched.
+     * @param string $date the date of the sms to be sent
+     * @return string the XML output
+     */
+    private function generateXMLStringForSending($messages = [], $date = '')
+    {
+        $smsXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smspack/>');
+        $smsXMLElement->addAttribute('ka', $this->config['auth']['username']);
+        $smsXMLElement->addAttribute('pwd', $this->config['auth']['password']);
+        if (strlen($date)) {
+            $smsXMLElement->addAttribute('tarih', $date);
+        }
+        $smsXMLElement->addAttribute('org', $this->senderID);
+        if ($this->config['append_unsubscribe_link'] === true) {
+            $smsXMLElement->addAttribute('addLinkToEnd', 'true');
+        }
+
+        foreach ($messages as $eachMessage) {
+            $message = $smsXMLElement->addChild('mesaj');
+            $message->addChild('metin', $eachMessage['text']);
+            $message->addChild('nums', $eachMessage['nums']);
+        }
+
+        return $smsXMLElement->asXML();
+    }
+
+    /**
      * Send same bulk message to many people
-     * @param $recipents array recipents
+     * @param $recipients array recipients
      * @param $message string message to be sent
      * @param $date string when will the message be sent?
      * @param $senderID string originator/sender id (may be a text or number)
      * @return string status API response
      */
-    public function sendBulk($recipents, $message = '', $date = '', $senderID = '')
+    public function sendBulk($recipients, $message = '', $date = '', $senderID = '')
     {
-
         //Checks the $message and $senderID, and initializes it
         $this->preChecks($message, $senderID);
 
-        //Sending for future date
-        $dateStr = '';
-        if (strlen($date)) {
-            $dateStr = ' tarih="' . $date . '"';
+        //recipients check + XML initialise
+        if (is_array($recipients)) {
+            $recipients = implode(', ', $recipients);
         }
 
-        //Recipents check + XML initialise
-        if (is_array($recipents)) {
-            $recipents = implode(', ', $recipents);
-        }
+        $messages = [
+            [
+                'text' => $this->message,
+                'nums' => $recipients,
+            ]
+        ];
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
-
-        $xml .= '<mesaj>' . '<metin>' . $this->message . '</metin>' . '<nums>' . $recipents . '</nums>' . '</mesaj>';
-
-        $xml .= '</smspack>';
+        $xml = $this->generateXMLStringForSending($date, $messages);
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
     }
@@ -122,17 +149,14 @@ class Mutlucell
             return 102;
         }
 
-        //Sending for future date
-        $dateStr = '';
-        if (strlen($date)) {
-            $dateStr = ' tarih="' . $date . '"';
-        }
+        $messages = [
+            [
+                'text' => $this->message,
+                'nums' => $receiver,
+            ]
+        ];
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $this->senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
-
-        $xml .= '<mesaj>' . '<metin>' . $this->message . '</metin>' . '<nums>' . $receiver . '</nums>' . '</mesaj>';
-
-        $xml .= '</smspack>';
+        $xml = $this->generateXMLStringForSending($date, $messages);
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
     }
@@ -140,7 +164,7 @@ class Mutlucell
 
     /**
      * Sends multiple SMSes to various people with various content
-     * @param array $reciversMessage recipents and message
+     * @param array $reciversMessage recipients and message
      * @param string $date delivery date
      * @param string $senderID originator/sender id (may be a text or number)
      * @return string status API response
@@ -149,25 +173,20 @@ class Mutlucell
     {
         //Pre-checks act1
         if ($senderID == null || !strlen(trim($senderID))) {
-            $senderID = $this->config['default_sender'];
+            $this->senderID = $this->config['default_sender'];
         }
 
-        //Sending for future date
-        $dateStr = '';
-        if (strlen($date)) {
-            $dateStr = ' tarih="' . $date . '"';
-        }
-
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
-
+        $messages = [];
         foreach ($reciversMessage as $eachMessageBlock) {
             $number = $eachMessageBlock[0];
             $message = $eachMessageBlock[1];
-
-            $xml .= '<mesaj>' . '<metin>' . $message . '</metin>' . '<nums>' . $number . '</nums>' . '</mesaj>';
+            $messages[] = [
+                'text' => $message,
+                'nums' => $number,
+            ];
         }
 
-        $xml .= '</smspack>';
+        $xml = $this->generateXMLStringForSending($date, $messages);
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
     }
@@ -175,7 +194,7 @@ class Mutlucell
 
     /**
      * Sends multiple SMSes to various people with various content with key and value pair
-     * @param array $reciversMessage recipents and message
+     * @param array $reciversMessage recipients and message
      * @param string $date delivery date
      * @param string $senderID originator/sender id (may be a text or number)
      * @return string status API response
@@ -184,22 +203,18 @@ class Mutlucell
     {
         //Pre-checks act1
         if ($senderID == null || !strlen(trim($senderID))) {
-            $senderID = $this->config['default_sender'];
+            $this->senderID = $this->config['default_sender'];
         }
 
-        //Sending for future date
-        $dateStr = '';
-        if (strlen($date)) {
-            $dateStr = ' tarih="' . $date . '"';
-        }
-
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smspack ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '"' . $dateStr . ' org="' . $senderID . '" charset="' . $this->config['charset'] . '"' . ($this->config['append_unsubscribe_link'] ? ' addLinkToEnd="true"' : '') . '>';
-
+        $messages = [];
         foreach ($reciversMessage as $number => $message) {
-            $xml .= '<mesaj>' . '<metin>' . $message . '</metin>' . '<nums>' . $number . '</nums>' . '</mesaj>';
+            $messages[] = [
+                'text' => $message,
+                'nums' => $number,
+            ];
         }
 
-        $xml .= '</smspack>';
+        $xml = $this->generateXMLStringForSending($date, $messages);
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
     }
@@ -220,9 +235,11 @@ class Mutlucell
             $phoneNumbers = implode(', ', $phoneNumbers);
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<addblacklist ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '">';
-        $xml .= '<nums>' . $phoneNumbers . '</nums>';
-        $xml .= '</addblacklist>';
+        $smsXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><addblacklist/>');
+        $smsXMLElement->addAttribute('ka', $this->config['auth']['username']);
+        $smsXMLElement->addAttribute('pwd', $this->config['auth']['password']);
+        $smsXMLElement->addChild('nums', $phoneNumbers);
+        $xml = $smsXMLElement->asXML();
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/addblklst');
     }
@@ -243,9 +260,11 @@ class Mutlucell
             $phoneNumbers = implode(', ', $phoneNumbers);
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<dltblacklist ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '">';
-        $xml .= '<nums>' . $phoneNumbers . '</nums>';
-        $xml .= '</dltblacklist>';
+        $smsXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><dltblacklist/>');
+        $smsXMLElement->addAttribute('ka', $this->config['auth']['username']);
+        $smsXMLElement->addAttribute('pwd', $this->config['auth']['password']);
+        $smsXMLElement->addChild('nums', $phoneNumbers);
+        $xml = $smsXMLElement->asXML();
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/dltblklst');
     }
@@ -257,7 +276,10 @@ class Mutlucell
      */
     public function checkBalance()
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smskredi ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '" />';
+        $creditXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smskredi/>');
+        $creditXML->addAttribute('ka', $this->config['auth']['username']);
+        $creditXML->addAttribute('pwd', $this->config['auth']['password']);
+        $xml = $creditXML->asXML();
 
         $response = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtcrdtex');
 
@@ -272,7 +294,10 @@ class Mutlucell
      */
     public function listOriginators()
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . '<smsorig ka="' . $this->config['auth']['username'] . '" pwd="' . $this->config['auth']['password'] . '" />';
+        $originatorsXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smsorig/>');
+        $originatorsXML->addAttribute('ka', $this->config['auth']['username']);
+        $originatorsXML->addAttribute('pwd', $this->config['auth']['password']);
+        $xml = $originatorsXML->asXML();
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtorgex');
     }
