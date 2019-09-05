@@ -165,12 +165,12 @@ class Mutlucell
 
     /**
      * Sends multiple SMSes to various people with various content
-     * @param array $reciversMessage recipients and message
+     * @param array $receiversMessage recipients and message
      * @param string $date delivery date
      * @param string $senderID originator/sender id (may be a text or number)
      * @return string status API response
      */
-    public function sendMulti($reciversMessage, $date = '', $senderID = '')
+    public function sendMulti($receiversMessage, $date = '', $senderID = '')
     {
         //Pre-checks act1
         if ($senderID == null || !strlen(trim($senderID))) {
@@ -178,7 +178,7 @@ class Mutlucell
         }
 
         $messages = [];
-        foreach ($reciversMessage as $eachMessageBlock) {
+        foreach ($receiversMessage as $eachMessageBlock) {
             $number = $eachMessageBlock[0];
             $message = $eachMessageBlock[1];
             $messages[] = [
@@ -195,12 +195,12 @@ class Mutlucell
 
     /**
      * Sends multiple SMSes to various people with various content with key and value pair
-     * @param array $reciversMessage recipients and message
+     * @param array $receiversMessage recipients and message
      * @param string $date delivery date
      * @param string $senderID originator/sender id (may be a text or number)
      * @return string status API response
      */
-    public function sendMulti2($reciversMessage, $date = '', $senderID = '')
+    public function sendMulti2($receiversMessage, $date = '', $senderID = '')
     {
         //Pre-checks act1
         if ($senderID == null || !strlen(trim($senderID))) {
@@ -208,7 +208,7 @@ class Mutlucell
         }
 
         $messages = [];
-        foreach ($reciversMessage as $number => $message) {
+        foreach ($receiversMessage as $number => $message) {
             $messages[] = [
                 'text' => $message,
                 'nums' => $number,
@@ -236,11 +236,11 @@ class Mutlucell
             $phoneNumbers = implode(', ', $phoneNumbers);
         }
 
-        $smsXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><addblacklist/>');
-        $smsXMLElement->addAttribute('ka', $this->config['auth']['username']);
-        $smsXMLElement->addAttribute('pwd', $this->config['auth']['password']);
-        $smsXMLElement->addChild('nums', $phoneNumbers);
-        $xml = $smsXMLElement->asXML();
+        $blXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><addblacklist/>');
+        $blXMLElement->addAttribute('ka', $this->config['auth']['username']);
+        $blXMLElement->addAttribute('pwd', $this->config['auth']['password']);
+        $blXMLElement->addChild('nums', $phoneNumbers);
+        $xml = $blXMLElement->asXML();
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/addblklst');
     }
@@ -261,11 +261,11 @@ class Mutlucell
             $phoneNumbers = implode(', ', $phoneNumbers);
         }
 
-        $smsXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><dltblacklist/>');
-        $smsXMLElement->addAttribute('ka', $this->config['auth']['username']);
-        $smsXMLElement->addAttribute('pwd', $this->config['auth']['password']);
-        $smsXMLElement->addChild('nums', $phoneNumbers);
-        $xml = $smsXMLElement->asXML();
+        $blXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><dltblacklist/>');
+        $blXMLElement->addAttribute('ka', $this->config['auth']['username']);
+        $blXMLElement->addAttribute('pwd', $this->config['auth']['password']);
+        $blXMLElement->addChild('nums', $phoneNumbers);
+        $xml = $blXMLElement->asXML();
 
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/dltblklst');
     }
