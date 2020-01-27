@@ -74,11 +74,11 @@ class Mutlucell
 
     /**
      * The method that creates a XML string to send to Mutlucell API
-     * @param array $messages the messages array to be dispatched.
      * @param string $date the date of the sms to be sent
+     * @param array $messages the messages array to be dispatched.
      * @return string the XML output
      */
-    private function generateXMLStringForSending($messages = [], $date = '')
+    private function generateXMLStringForSending($date = '', $messages = [])
     {
         $smsXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smspack/>');
         $smsXMLElement->addAttribute('ka', $this->config['auth']['username']);
