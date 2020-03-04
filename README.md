@@ -13,7 +13,7 @@ Ekstra Bağımlılıklar (Laravel 6.x sürümü ve üstü için)
 -----------
 * SimpleXML PHP Eklentisi
 
-Kurulum (Laravel 6.x için)
+Kurulum (Laravel 7.x için)
 -----------
 
 * Öncelikle `composer.json` dosyanızdaki `require` kısmına aşağıdaki değeri ekleyin:
