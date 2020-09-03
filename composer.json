@@ -19,7 +19,6 @@
   "require": {
     "php": "^7.3",
     "illuminate/support": "7.*",
-    "guzzlehttp/guzzle": "~7.0",
     "ext-simplexml": "*"
   },
   "autoload": {
