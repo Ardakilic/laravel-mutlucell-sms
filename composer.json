@@ -17,7 +17,7 @@
     },
     "autoload": {
         "psr-0": {
-            "Ardakilic\\Mutlucell\\": "src/"
+            "Ardakilic\\Mutlucell\\": "src/Ardakilic/Mutlucell/"
         }
     },
     "minimum-stability": "stable"
