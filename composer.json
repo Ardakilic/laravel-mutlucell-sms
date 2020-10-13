@@ -18,7 +18,7 @@
   ],
   "require": {
     "php": ">=5.5.9",
-    "illuminate/support": "5.*",
+    "illuminate/support": "8.*",
     "guzzlehttp/guzzle": "~6.1"
   },
   "autoload": {
