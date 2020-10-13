@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Laravel 7 Mutlucell SMS
+ * Laravel 8 Mutlucell SMS
  * @license MIT License
  * @author Arda Kılıçdağı <arda@kilicdagi.com>
  * @link https://arda.pw
