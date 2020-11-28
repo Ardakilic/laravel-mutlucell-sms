@@ -76,6 +76,22 @@ if(Mutlucell::getStatus($send)) {
 }
 ```
 
+#### Mutlucell SMS ID
+
+Gönderilen mesajın durumunu (karşı tarafa ulaşıp ulaşmadığı) takip edebilmeniz için SMS ID değerine ihtiyacınız var. 
+
+Aşağıdaki şekilde, SMS ID edinip, daha sonra bununla sorgulama yapabilirsiniz. 
+
+```php
+$send = Mutlucell::send('05312345678', 'Merhaba');
+if(Mutlucell::getStatus($send)) {
+    $messageId = Mutlucell::getMessageId($send);
+    echo 'SMS başarı ile gönderildi! SMS ID: '. $messageId;
+} else {
+    echo 'SMS gönderilemedi';
+}
+```
+
 #### Birden fazla kişiye aynı anda aynı SMS'i göndermek için:
 
 ```php
@@ -113,6 +129,19 @@ $kisiMesajlar = [
 ];
 $send = Mutlucell::sendMulti2($kisiMesajlar);
 var_dump(Mutlucell::parseOutput($send));
+```
+
+#### Gönderilen mesajın durumunu sorgulamak için:
+
+```bash
+>>> \Mutlucell::getMessageReport('1234567890');
+=> [
+     [
+       "number" => "905321234567",
+       "result" => "3",
+       "result_text" => "Başarılı",
+     ],
+   ]
 ```
 
 #### Bir veya birden Fazla Kullanıcıyı Kara Listeye Eklemek İçin
