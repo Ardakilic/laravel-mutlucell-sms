@@ -303,6 +303,69 @@ class Mutlucell
         return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtorgex');
     }
 
+    /**
+     * @param $messageId
+     *
+     * @return array|string
+     */
+    public function getMessageReport($messageId)
+    {
+        $originatorsXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smsrapor/>');
+        $originatorsXML->addAttribute('ka', $this->config['auth']['username']);
+        $originatorsXML->addAttribute('pwd', $this->config['auth']['password']);
+        $originatorsXML->addAttribute('id', $messageId);
+        $xml = $originatorsXML->asXML();
+
+        $result = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtblkrprtex');
+        if ($this->isnum($result)) {
+            $report = [
+                'success' => false,
+            ];
+
+            switch ($result) {
+                case 20:
+                    $report[] = [
+                        'error_code' => 20,
+                        'error_message' => $this->lang['reports']['20']
+                    ];
+
+                    break;
+                case 23:
+                    $report[] = [
+                        'error_code' => 23,
+                        'error_message' => $this->lang['reports']['23']
+                    ];
+
+                    break;
+                case 30:
+                    $report[] = [
+                        'error_code' => 30,
+                        'error_message' => $this->lang['reports']['30']
+                    ];
+
+                    break;
+            }
+        } else {
+            $messages = array_filter(explode("\n", $result));
+            $report = [
+                'success' => true,
+            ];
+
+            foreach ($messages as $message) {
+                $message = explode(' ', $message);
+                $number = $message[0];
+
+                $report['numbers'][$number] = [
+                    'success' => true,
+                    'number' => $number,
+                    'result' => $message[1],
+                    'result_text' => $this->lang['sms'][$message[1]] ?? 'Unknown',
+                ];
+            }
+        }
+
+        return $report;
+    }
 
     /**
      * Parse the output
@@ -411,6 +474,24 @@ class Mutlucell
         } else {
             return false;
         }
+    }
+
+    /**
+     * @param $output
+     *
+     * @return string|null
+     */
+    public function getMessageId($output)
+    {
+        if (preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
+            //returned output is formatted like $ID#STATUS
+            //E.g: $1234567#1.0
+            $output = explode('#', $output);
+
+            return str_replace('$', '', $output[0]);
+        }
+
+        return null;
     }
 
     /**
