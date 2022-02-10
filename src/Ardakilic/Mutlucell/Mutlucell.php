@@ -3,7 +3,7 @@
 namespace Ardakilic\Mutlucell;
 
 /**
- * Laravel 8 Mutlucell SMS
+ * Laravel 9 Mutlucell SMS
  * @license MIT License
  * @author Arda Kılıçdağı <arda@kilicdagi.com>
  * @link https://arda.pw
