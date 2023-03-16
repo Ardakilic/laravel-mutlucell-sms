@@ -2,7 +2,7 @@
 namespace Ardakilic\Mutlucell\Facades;
 
 /**
- * Laravel 9 Mutlucell SMS
+ * Laravel 10 Mutlucell SMS
  * @license MIT License
  * @author Arda Kılıçdağı <arda@kilicdagi.com>
  * @link https://arda.pw
