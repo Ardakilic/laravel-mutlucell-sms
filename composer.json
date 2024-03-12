@@ -18,7 +18,7 @@
   ],
   "require": {
     "php": ">=7.2.0",
-    "illuminate/support": "6.*",
+    "illuminate/support": "11.*",
     "guzzlehttp/guzzle": "~6.3",
     "ext-simplexml": "*"
   },
