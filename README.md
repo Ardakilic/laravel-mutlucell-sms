@@ -1,11 +1,11 @@
-Laravel 10, 9, 8, 7, 6, 5 ve 4 için Mutlucell SMS
+Laravel Mutlucell SMS
 =========
 
 [![Latest Stable Version](https://poser.pugx.org/ardakilic/mutlucell/v/stable.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![Total Downloads](https://poser.pugx.org/ardakilic/mutlucell/downloads.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![Latest Unstable Version](https://poser.pugx.org/ardakilic/mutlucell/v/unstable.svg)](https://packagist.org/packages/ardakilic/mutlucell) [![License](https://poser.pugx.org/ardakilic/mutlucell/license.svg)](https://packagist.org/packages/ardakilic/mutlucell)
 
-Bu paket sayesinde Laravel 10.x, 9.x, 8.x, 7.x, 6.x, 5.x veya 4.x kullanan projelerinizde [Mutlucell](https://www.mutlucell.com.tr/) altyapısını kullanarak tekli veya çoklu sms gönderebilir, bakiye ve originator ID sorgulayabilirsiniz. 
+Bu paket sayesinde Laravel kullanan projelerinizde [Mutlucell](https://www.mutlucell.com.tr/) altyapısını kullanarak tekli veya çoklu sms gönderebilir, bakiye ve originator ID sorgulayabilirsiniz. 
 
-Bu branch Laravel 10 içindir. Eğer bu paketi Laravel 9.x üzerinde kullanmak istiyorsanız *6.x sürümünü* `"ardakilic/mutlucell": "~6"`, 8.x üzerinde kullanmak istiyorsanız *5.x sürümünü* `"ardakilic/mutlucell": "~5"`, 7.x üzerinde kullanmak istiyorsanız *4.x sürümünü* `"ardakilic/mutlucell": "~4"`, 6.x üzerinde kullanmak istiyorsanız *3.x sürümünü* `"ardakilic/mutlucell": "~3"` etiketi ile, Laravel 5.x üzerinde kullanmak istiyorsanız *2.x sürümünü*  `"ardakilic/mutlucell": "~2"` etiketi ile, Laravel 4 üzerinde kullanmak istiyorsanız *1.x sürümünü*, `"ardakilic/mutlucell": "~1"` etiketi ile kullanmalısınız.
+Paket Laravel 4 ve üzerindeki tüm sürümleri destekler.
 
 Uyarı, hata ve bilgilendirme için Türkçe ve de İngilizce dillerinde uyarı ve bilgi mesajlarını barındırır.
 
@@ -13,51 +13,31 @@ Ekstra Bağımlılıklar (Laravel 6.x sürümü ve üstü için)
 -----------
 * SimpleXML PHP Eklentisi
 
-Kurulum (Laravel 10.x için)
+Kurulum
 -----------
 
-* Öncelikle `composer.json` dosyanızdaki `require` kısmına aşağıdaki değeri ekleyin:
+* Öncelikle `composer.json` paketinize `composer require ardakilic/mutlucell` komutu ile de paketi ekleyin.
+* Ardından eğer `composer.json` dosyasını elinizle güncellediyseniz kodları projenize dahil etmek için Composer paketlerinizi güncellemelisiniz. `composer install` komutu ile bunu yapabilirsiniz.
+* _(Sadece Laravel 5.5'ten daha eski sürümler için)_ Şimdi de `config/app.php` dosyasını açın, `providers` dizisi içine en alta şunu girin:
 
-    ```json
-    "ardakilic/mutlucell": "~7"
-    ```
+  ```php
+  Ardakilic\Mutlucell\MutlucellServiceProvider::class,
+  ```
+  
+* _(Sadece Laravel 5.5'ten daha eski sürümler için)_ Yine aynı dosyadaki `aliases` dizisi altına şu değeri girin:
 
-    Alternatif olarak `composer require ardakilic/mutlucell:~7` komutu ile de paketi ekleyebilirsiniz.
-* Ardından eğer `composer.json` dosyasını elinizle güncellediyseniz kodları projenize dahil etmek için Composer paketlerinizi güncellemelisiniz. `composer update` komutu ile bunu yapabilirsiniz.
-* Şimdi de `config/app.php` dosyasını açın, `providers` dizisi içine en alta şunu girin:
-
-    ```php
-    Ardakilic\Mutlucell\MutlucellServiceProvider::class,
-    ```
-    _(Laravel 5.5 ve sonrası için gerekli değildir)_
-    
-* Şimdi yine aynı dosyada `aliases` dizisi altına şu değeri girin:
-
-    ```php
-    'Mutlucell' => Ardakilic\Mutlucell\Facades\Mutlucell::class,
-    ```
-    _(Laravel 5.5 ve sonrası için gerekli değildir)_
-    
+  ```php
+  'Mutlucell' => Ardakilic\Mutlucell\Facades\Mutlucell::class,
+  ```
+  
 * Şimdi de environment'ınıza konfigürasyon dosyasını paylaşmalısınız. Bunun için aşağıdaki komutu çalıştırın:
 
-    ```shell
-    php artisan vendor:publish
-    ```
+  ```shell
+  php artisan vendor:publish
+  ```
 * `config/mutlucell.php` dosyası paylaşılacak. Burada Mutlucell için size atanan kullanıcı adı, parola ve sender_id (originator) değerlerini, ve de diğer ayarları doldurmalısınız. 
 
 Ayrıca environment dosyanıza `MUTLUCELL_USERNAME`, `MUTLUCELL_PASSWORD` ve `MUTLUCELL_DEFAULT_SENDER` değerlerini de doldurarak config dosyanızı besleyebilirsiniz.
-
-**Laravel 9.x sürümünde kullanım bilgisi için [ilgili branch'ın README.md dosyasına](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/l9) bakmalısınız.**
-
-**Laravel 8.x sürümünde kullanım bilgisi için [ilgili branch'ın README.md dosyasına](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/l8) bakmalısınız.**
-
-**Laravel 7.x sürümünde kullanım bilgisi için [ilgili branch'ın README.md dosyasına](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/l7) bakmalısınız.**
-
-**Laravel 6.x sürümünde kullanım bilgisi için [ilgili branch'ın README.md dosyasına](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/l6) bakmalısınız.**
-
-**Laravel 5.x sürümünde kullanım bilgisi için [ilgili branch'ın README.md dosyasına](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/l5) bakmalısınız.**
-
-**Laravel 4.x sürümünde kullanım bilgisi için [ilgili branch'ın README.md dosyasına](https://github.com/Ardakilic/laravel-mutlucell-sms/tree/l4) bakmalısınız.**
 
 Kullanım
 -------------
@@ -74,9 +54,9 @@ var_dump(Mutlucell::parseOutput($send));
 ```php
 $send = Mutlucell::send('05312345678', 'Merhaba');
 if(Mutlucell::getStatus($send)) {
-    echo 'SMS başarı ile gönderildi!';
+  echo 'SMS başarı ile gönderildi!';
 } else {
-    echo 'SMS gönderilemedi';
+  echo 'SMS gönderilemedi';
 }
 ```
 
@@ -89,10 +69,10 @@ Aşağıdaki şekilde, SMS ID edinip, daha sonra bununla sorgulama yapabilirsini
 ```php
 $send = Mutlucell::send('05312345678', 'Merhaba');
 if(Mutlucell::getStatus($send)) {
-    $messageId = Mutlucell::getMessageId($send);
-    echo 'SMS başarı ile gönderildi! SMS ID: '. $messageId;
+  $messageId = Mutlucell::getMessageId($send);
+  echo 'SMS başarı ile gönderildi! SMS ID: '. $messageId;
 } else {
-    echo 'SMS gönderilemedi';
+  echo 'SMS gönderilemedi';
 }
 ```
 
@@ -115,9 +95,9 @@ Mutlucell::parseOutput($send);
 
 ```php
 $kisiMesajlar = [
-    ['05315558964', 'Merhaba1'],
-    ['+905415589632', 'Merhaba2'],
-    ['00905369998874', 'Merhaba3']
+  ['05315558964', 'Merhaba1'],
+  ['+905415589632', 'Merhaba2'],
+  ['00905369998874', 'Merhaba3']
 ];
 $send = Mutlucell::sendMulti($kisiMesajlar);
 var_dump(Mutlucell::parseOutput($send));
@@ -127,9 +107,9 @@ Veya
 
 ```php
 $kisiMesajlar = [
-    ['05315558964' => 'Merhaba1'],
-    ['+905415589632' => 'Merhaba2'],
-    ['00905369998874' => 'Merhaba3']
+  ['05315558964' => 'Merhaba1'],
+  ['+905415589632' => 'Merhaba2'],
+  ['00905369998874' => 'Merhaba3']
 ];
 $send = Mutlucell::sendMulti2($kisiMesajlar);
 var_dump(Mutlucell::parseOutput($send));
@@ -140,11 +120,11 @@ var_dump(Mutlucell::parseOutput($send));
 ```bash
 >>> \Mutlucell::getMessageReport('1234567890');
 => [
-     [
-       "number" => "905321234567",
-       "result" => "3",
-       "result_text" => "Başarılı",
-     ],
+    [
+      "number" => "905321234567",
+      "result" => "3",
+      "result_text" => "Başarılı",
+    ],
    ]
 ```
 
@@ -204,18 +184,19 @@ var_dump(Mutlucell::parseOutput($sil));
 #### Farklı bir ayar dosyası ile SMS göndermek için
 
 ```php
-$gonder = Mutlucell::setConfig(config('app.baskaConfig'))->send('05312345678', 'Merhaba');
+$gonder = Mutlucell::setConfig(config('app.baskaConfig'))
+  ->send('05312345678', 'Merhaba');
 ```
 
 Hatta
 
 ```php
 $sms = Mutlucell::setConfig([
-    'auth' => [
-        'username' => 'baskauser',
-        'password' => 'baskaparola',
-    ],
-    'default_sender' => 'baskaoriginator',
+  'auth' => [
+    'username' => 'baskauser',
+    'password' => 'baskaparola',
+  ],
+  'default_sender' => 'baskaoriginator',
 ]);
 
 $sms->send('05312345678', 'Merhaba');

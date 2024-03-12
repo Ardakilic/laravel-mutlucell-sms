@@ -1,6 +1,6 @@
 {
   "name": "ardakilic/mutlucell",
-  "description": "Mutlucell SMS API wrapper for sending sms text messages for Laravel 10, 9, 8, 7, 6, 5 and 4.",
+  "description": "Mutlucell SMS API wrapper for sending sms text messages for Laravel",
   "keywords": [
     "laravel",
     "sms",
@@ -18,7 +18,7 @@
   ],
   "require": {
     "php": "^7.3|^8.0",
-    "illuminate/support": "10.*",
+    "illuminate/support": "11.*",
     "guzzlehttp/guzzle": "^6.5.6|^7.5.0",
     "ext-simplexml": "*"
   },
