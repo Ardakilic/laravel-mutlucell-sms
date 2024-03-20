@@ -218,7 +218,7 @@ var_dump(Mutlucell::listOriginators());
 #### Gelecek bir tarihe SMS yollamak için:
 
 ```php
-Mutlucell::send('05312223665', 'Geç gidecek mesaj', '2099-06-30 15:00'); //saniye yok, dikkat!
+Mutlucell::send('05312223665', 'Geç gidecek mesaj', '2099-06-30 15:00'); // Saniye yok, dikkat!
 ```
 
 #### Farklı bir Originatör (Sender ID) kullanarak SMS yollamak için:

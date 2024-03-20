@@ -10,22 +10,22 @@
 
 return [
 
-  //Mutlucell Authentication
+  // Mutlucell Authentication
   'auth' => [
     'username' => env('MUTLUCELL_USERNAME', ''),
     'password' => env('MUTLUCELL_PASSWORD',''),
   ],
 
-  //Default sender ID, for senders (AKA Originator)
+  // Default sender ID, for senders (AKA Originator)
   'default_sender' => env('MUTLUCELL_DEFAULT_SENDER', ''),
 
-  //use Queue service?
+  // Use Queue service?
   'queue' => false,
 
   // SMS Charset
   'charset' => 'default', // Values are: default, turkish, unicode
 
-  //Append Unsubscribe text and link for receivers
+  // Append Unsubscribe text and link for receivers
   'append_unsubscribe_link' => false,
 
 ];

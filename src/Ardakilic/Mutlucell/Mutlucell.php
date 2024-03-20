@@ -146,7 +146,7 @@ class Mutlucell
 
     // Ensure that the receiver is not empty
     if ($receiver == null || !strlen(trim($receiver))) {
-      //no receiver
+      // no receiver
       return 102;
     }
 
@@ -308,7 +308,7 @@ class Mutlucell
     $xml = $originatorsXML->asXML();
 
     $result = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtblkrprtex');
-    if ($this->isnum($result)) {
+    if ($this->isNum($result)) {
       $report = [
         'success' => false,
       ];
@@ -366,7 +366,7 @@ class Mutlucell
   public function parseOutput($output)
   {
     // if error code is returned, api OR the app will return an integer error code
-    if ($this->isnum($output)) {
+    if ($this->isNum($output)) {
       switch ($output) {
 
         case 20:
@@ -444,7 +444,7 @@ class Mutlucell
   public function getStatus($output)
   {
     // If error code is returned, API will return an integer error code
-    if ($this->isnum($output)) {
+    if ($this->isNum($output)) {
       return false;
 
       // returns from Mutlucell
@@ -524,12 +524,13 @@ class Mutlucell
         $response = $client->send($request);
         return $response->getBody()->getContents();
       });
-    } else {
-      $client = new Client();
-      $request = new Request('POST', $url, ['Content-Type' => 'text/xml; charset=UTF8'], $xml);
-      $response = $client->send($request);
-      return $response->getBody()->getContents();
+      return 'queued';
     }
+
+    $client = new Client();
+    $request = new Request('POST', $url, ['Content-Type' => 'text/xml; charset=UTF8'], $xml);
+    $response = $client->send($request);
+    return $response->getBody()->getContents();
   }
 
 
@@ -538,14 +539,13 @@ class Mutlucell
    * !I'm not using is_int() because people may add numbers in quotes!
    * Taken from PHP-Fusion <http://php-fusion.co.uk>
    * @param string $value string to be checked
-   * @return boolean
+   * @return boolean|int
    */
-  private function isnum($value)
+  private function isNum($value)
   {
     if (!is_array($value)) {
       return preg_match("/^[0-9]+$/", $value);
-    } else {
-      return false;
     }
+    return false;
   }
 }

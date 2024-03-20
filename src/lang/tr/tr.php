@@ -10,7 +10,7 @@
 
 return [
 
-  //Paket Raporları
+  // Paket Raporları
   'reports' => [
 
     '20' => 'Post edilen xml eksik veya hatalı.',
@@ -25,7 +25,7 @@ return [
 
   ],
 
-  //Sms Gönderim Raporları
+  // Sms Gönderim Raporları
   'sms' => [
 
     '0' => 'Gönderilemedi',
@@ -42,7 +42,7 @@ return [
 
   ],
 
-  //App-specific
+  // App-specific
   'app' => [
 
     '0' => 'Bir mesaj girmelisiniz',
@@ -55,7 +55,7 @@ return [
 
   ],
 
-  //Exception Hata Mesajları
+  // Exception Hata Mesajları
   'exceptions' => [
 
     '0' => 'Mutlucell auth parametresi ayarlarda tanımlanmamış!',

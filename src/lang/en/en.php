@@ -10,7 +10,7 @@
 
 return [
 
-  //Bundle reports
+  // Bundle reports
   'reports' => [
 
     '20' => 'The xml that has been posted is misformatted.',
@@ -25,7 +25,7 @@ return [
 
   ],
 
-  //Sms Delivery Reports
+  // Sms Delivery Reports
   'sms' => [
 
     '0' => 'Could not be sent',
@@ -42,7 +42,7 @@ return [
 
   ],
 
-  //App-specific
+  // App-specific reports
   'app' => [
 
     '0' => 'You must provide a message',
@@ -55,7 +55,7 @@ return [
 
   ],
 
-  //Exception Messages
+  // Exception Messages
   'exceptions' => [
 
     '0' => 'Mutlucell auth parameter is not set in the config!',
