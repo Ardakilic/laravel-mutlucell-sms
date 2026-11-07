@@ -23,11 +23,13 @@ jobs:
       - name: Check out PR head
         uses: actions/checkout@v7
         with:
+          persist-credentials: false
           path: head
 
       - name: Check out base branch
         uses: actions/checkout@v7
         with:
+          persist-credentials: false
           ref: ${{ github.base_ref }}
           path: base
 
@@ -85,6 +87,7 @@ jobs:
 
       - name: Comment coverage on PR
         if: always()
+        continue-on-error: true
         uses: actions/github-script@v8
         env:
           BASE_REF: ${{ github.base_ref }}

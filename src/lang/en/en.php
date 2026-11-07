@@ -21,7 +21,7 @@ return [
     '25' => 'Please try again in a couple of minutes later',
     '30' => 'Account is not activated yet.',
 
-    '999' => 'Unknwon error',
+    '999' => 'Unknown error',
 
   ],
 

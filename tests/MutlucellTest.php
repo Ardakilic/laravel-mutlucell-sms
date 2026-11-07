@@ -348,7 +348,7 @@ class MutlucellTest extends TestCase
 
         $this->assertFalse($report['success']);
         $this->assertSame(21, $report['error']['error_code']);
-        $this->assertSame('Unknwon error', $report['error']['error_message']);
+        $this->assertSame('Unknown error', $report['error']['error_message']);
     }
 
     #[Test]
@@ -381,13 +381,13 @@ class MutlucellTest extends TestCase
         $this->assertSame('You must provide a message', $sut->parseOutput(output: '100'));
         $this->assertSame('Recipent(s) must be an array', $sut->parseOutput(output: '101'));
         $this->assertSame('Misformatted Recipent(s), all of them have to be an integer', $sut->parseOutput(output: '102'));
-        $this->assertSame('Unknwon error', $sut->parseOutput(output: '999'));
+        $this->assertSame('Unknown error', $sut->parseOutput(output: '999'));
         $this->assertSame('SMS have been sent successfully!', $sut->parseOutput(output: '$456#1.0'));
         $this->assertSame('No SMS sent', $sut->parseOutput(output: '$456#0.0'));
         $this->assertSame('something-else', $sut->parseOutput(output: 'something-else'));
         $this->assertSame('Misformatted Recipent(s), all of them have to be an integer', $sut->parseOutput(output: 102));
-        $this->assertSame('Unknwon error', $sut->parseOutput(output: '45'));
-        $this->assertSame('Unknwon error', $sut->parseOutput(output: 45));
+        $this->assertSame('Unknown error', $sut->parseOutput(output: '45'));
+        $this->assertSame('Unknown error', $sut->parseOutput(output: 45));
     }
 
     #[Test]
