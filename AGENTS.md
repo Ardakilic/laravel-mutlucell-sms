@@ -28,6 +28,7 @@ Mutlucell SMS API wrapper for Laravel. Sends XML POST requests to
 ## Conventions
 - PSR-4 (`Ardakilic\Mutlucell\`). Keep BC: public method signatures + config keys stable.
 - Keep `en`/`tr` lang files in sync (same top-level and sub-keys).
+- Public API is named-arguments-first (PHP 8): descriptive param names (`sender`, `messages`, `receiver`/`recipients`, `phoneNumbers`, `messageId`, `output`), scalar/union types; call sites in tests/README use `name:` syntax.
 - No new runtime dependencies.
 
 ## Testability

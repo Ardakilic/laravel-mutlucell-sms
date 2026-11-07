@@ -63,7 +63,7 @@ class MutlucellTest extends TestCase
             'default_sender' => 'TEST',
         ]);
 
-        $sut->send('905551112233', 'hi');
+        $sut->send(receiver: '905551112233', message: 'hi');
 
         $xml = $this->xmlOf($history);
         $this->assertSame('default', (string) $xml['charset']);
@@ -76,7 +76,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut(['default_sender' => 'OVERRIDE'], ['$1#1.0'], $history);
 
-        $sut->send('905551112233', 'hi');
+        $sut->send(receiver: '905551112233', message: 'hi');
 
         $this->assertSame('OVERRIDE', (string) $this->xmlOf($history)['org']);
     }
@@ -87,8 +87,8 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], [], $history);
 
-        $this->assertSame(102, $sut->send('', 'hello'));
-        $this->assertSame(102, $sut->send('   ', 'hello'));
+        $this->assertSame(102, $sut->send(message: 'hello', receiver: ''));
+        $this->assertSame(102, $sut->send(message: 'hello', receiver: '   '));
         $this->assertCount(0, $history);
     }
 
@@ -98,7 +98,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['$123#1.0'], $history);
 
-        $result = $sut->send('905551112233', 'hello');
+        $result = $sut->send(receiver: '905551112233', message: 'hello');
 
         $this->assertSame('$123#1.0', $result);
         $this->assertCount(1, $history);
@@ -120,7 +120,7 @@ class MutlucellTest extends TestCase
     {
         [$sut] = $this->makeSut([], ['$123#0.0']);
 
-        $this->assertSame('$123#0.0', $sut->send('905551112233', 'hello'));
+        $this->assertSame('$123#0.0', $sut->send(receiver: '905551112233', message: 'hello'));
     }
 
     #[Test]
@@ -128,7 +128,7 @@ class MutlucellTest extends TestCase
     {
         [$sut] = $this->makeSut([], ['22']);
 
-        $this->assertSame('22', $sut->send('905551112233', 'hello'));
+        $this->assertSame('22', $sut->send(message: 'hello', receiver: '905551112233'));
     }
 
     #[Test]
@@ -137,7 +137,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['$1#1.0'], $history);
 
-        $sut->send('905551112233', 'hi', '2026-05-01 10:00:00');
+        $sut->send(receiver: '905551112233', message: 'hi', date: '2026-05-01 10:00:00');
 
         $this->assertSame('2026-05-01 10:00:00', (string) $this->xmlOf($history)['tarih']);
     }
@@ -148,7 +148,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['$1#1.0'], $history);
 
-        $sut->send('905551112233', 'hi', '', 'CUSTOM');
+        $sut->send(receiver: '905551112233', message: 'hi', sender: 'CUSTOM');
 
         $this->assertSame('CUSTOM', (string) $this->xmlOf($history)['org']);
     }
@@ -161,7 +161,7 @@ class MutlucellTest extends TestCase
         [$sut] = $this->makeSut();
         $init = new \ReflectionMethod(Mutlucell::class, 'initSenderAndMessage');
         $init->setAccessible(true);
-        $init->invoke($sut, '', '');
+        $init->invoke($sut, message: '', sender: '');
 
         $message = new \ReflectionProperty(Mutlucell::class, 'message');
         $message->setAccessible(true);
@@ -175,7 +175,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['$1#1.0'], $history);
 
-        $result = $sut->sendBulk(['905551112233', '905544443322'], 'bulk hi');
+        $result = $sut->sendBulk(recipients: ['905551112233', '905544443322'], message: 'bulk hi');
 
         $this->assertSame('$1#1.0', $result);
         $request = $history[0]['request'];
@@ -190,7 +190,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['$1#1.0'], $history);
 
-        $sut->sendBulk('905551112233', 'hi');
+        $sut->sendBulk(recipients: '905551112233', message: 'hi');
 
         $this->assertSame('905551112233', (string) $this->xmlOf($history)->mesaj->nums);
     }
@@ -201,7 +201,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['$1#1.0'], $history);
 
-        $sut->sendMulti([['905551112233', 'msg1'], ['905544443322', 'msg2']]);
+        $sut->sendMulti(messages: [['905551112233', 'msg1'], ['905544443322', 'msg2']]);
 
         $xml = $this->xmlOf($history);
         $this->assertSame('TEST', (string) $xml['org']);
@@ -213,15 +213,18 @@ class MutlucellTest extends TestCase
     }
 
     #[Test]
-    public function send_multi_ignores_custom_sender(): void
+    public function send_multi_uses_custom_sender(): void
     {
-        // Upstream quirk: sendMulti never assigns a non-empty $senderID, org stays default.
         $history = [];
-        [$sut, $history] = $this->makeSut([], ['$1#1.0'], $history);
+        [$sut, $history] = $this->makeSut([], ['$1#1.0', '$2#1.0'], $history);
 
-        $sut->sendMulti([['905551112233', 'msg1']], '', 'CUSTOM');
+        $sut->sendMulti(messages: [['905551112233', 'msg1']], sender: 'CUSTOM');
 
-        $this->assertSame('TEST', (string) $this->xmlOf($history)['org']);
+        $this->assertSame('CUSTOM', (string) $this->xmlOf($history)['org']);
+
+        $sut->sendMulti2(messages: ['905551112233' => 'm1'], sender: 'CUSTOM');
+
+        $this->assertSame('CUSTOM', (string) $this->xmlOf($history, 1)['org']);
     }
 
     #[Test]
@@ -230,7 +233,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['$1#1.0'], $history);
 
-        $sut->sendMulti2(['905551112233' => 'm1', '905544443322' => 'm2']);
+        $sut->sendMulti2(messages: ['905551112233' => 'm1', '905544443322' => 'm2']);
 
         $xml = $this->xmlOf($history);
         $this->assertCount(2, $xml->mesaj);
@@ -246,7 +249,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['added'], $history);
 
-        $this->assertSame('added', $sut->addBlacklist('905551112233'));
+        $this->assertSame('added', $sut->addBlacklist(phoneNumbers: '905551112233'));
         $this->assertStringContainsString('addblklst', (string) $history[0]['request']->getUri());
         $this->assertSame('905551112233', (string) $this->xmlOf($history)->nums);
     }
@@ -257,7 +260,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['added'], $history);
 
-        $sut->addBlacklist(['905551112233', '905544443322']);
+        $sut->addBlacklist(phoneNumbers: ['905551112233', '905544443322']);
 
         $this->assertSame('905551112233, 905544443322', (string) $this->xmlOf($history)->nums);
     }
@@ -279,7 +282,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['deleted'], $history);
 
-        $this->assertSame('deleted', $sut->deleteBlackList('905551112233'));
+        $this->assertSame('deleted', $sut->deleteBlackList(phoneNumbers: '905551112233'));
         $this->assertStringContainsString('dltblklst', (string) $history[0]['request']->getUri());
         $this->assertSame('905551112233', (string) $this->xmlOf($history)->nums);
     }
@@ -290,7 +293,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['deleted'], $history);
 
-        $sut->deleteBlackList(['905551112233', '905544443322']);
+        $sut->deleteBlackList(phoneNumbers: ['905551112233', '905544443322']);
 
         $this->assertSame('905551112233, 905544443322', (string) $this->xmlOf($history)->nums);
     }
@@ -339,7 +342,7 @@ class MutlucellTest extends TestCase
             $history = [];
             [$sut, $history] = $this->makeSut([], [(string) $code], $history);
 
-            $report = $sut->getMessageReport('1');
+            $report = $sut->getMessageReport(messageId: '1');
 
             $this->assertFalse($report['success']);
             $this->assertSame($code, $report[0]['error_code']);
@@ -353,7 +356,7 @@ class MutlucellTest extends TestCase
     {
         [$sut] = $this->makeSut([], ["905551112233 3\n905544443322 99\n"]);
 
-        $report = $sut->getMessageReport('1');
+        $report = $sut->getMessageReport(messageId: '1');
 
         $this->assertTrue($report['success']);
         $this->assertSame(
@@ -368,20 +371,20 @@ class MutlucellTest extends TestCase
     {
         [$sut] = $this->makeSut();
 
-        $this->assertSame('The xml that has been posted is misformatted.', $sut->parseOutput('20'));
-        $this->assertSame("You don't own the originator (sender ID)", $sut->parseOutput('21'));
-        $this->assertSame('Your balance is insufficent', $sut->parseOutput('22'));
-        $this->assertSame('Username or password is incorrect.', $sut->parseOutput('23'));
-        $this->assertSame('There is another action happening on your account', $sut->parseOutput('24'));
-        $this->assertSame('Please try again in a couple of minutes later', $sut->parseOutput('25'));
-        $this->assertSame('Account is not activated yet.', $sut->parseOutput('30'));
-        $this->assertSame('You must provide a message', $sut->parseOutput('100'));
-        $this->assertSame('Recipent(s) must be an array', $sut->parseOutput('101'));
-        $this->assertSame('Misformatted Recipent(s), all of them have to be an integer', $sut->parseOutput('102'));
-        $this->assertSame('Unknwon error', $sut->parseOutput('999'));
-        $this->assertSame('SMS have been sent successfully!', $sut->parseOutput('$456#1.0'));
-        $this->assertSame('No SMS sent', $sut->parseOutput('$456#0.0'));
-        $this->assertSame('something-else', $sut->parseOutput('something-else'));
+        $this->assertSame('The xml that has been posted is misformatted.', $sut->parseOutput(output: '20'));
+        $this->assertSame("You don't own the originator (sender ID)", $sut->parseOutput(output: '21'));
+        $this->assertSame('Your balance is insufficent', $sut->parseOutput(output: '22'));
+        $this->assertSame('Username or password is incorrect.', $sut->parseOutput(output: '23'));
+        $this->assertSame('There is another action happening on your account', $sut->parseOutput(output: '24'));
+        $this->assertSame('Please try again in a couple of minutes later', $sut->parseOutput(output: '25'));
+        $this->assertSame('Account is not activated yet.', $sut->parseOutput(output: '30'));
+        $this->assertSame('You must provide a message', $sut->parseOutput(output: '100'));
+        $this->assertSame('Recipent(s) must be an array', $sut->parseOutput(output: '101'));
+        $this->assertSame('Misformatted Recipent(s), all of them have to be an integer', $sut->parseOutput(output: '102'));
+        $this->assertSame('Unknwon error', $sut->parseOutput(output: '999'));
+        $this->assertSame('SMS have been sent successfully!', $sut->parseOutput(output: '$456#1.0'));
+        $this->assertSame('No SMS sent', $sut->parseOutput(output: '$456#0.0'));
+        $this->assertSame('something-else', $sut->parseOutput(output: 'something-else'));
     }
 
     #[Test]
@@ -389,10 +392,10 @@ class MutlucellTest extends TestCase
     {
         [$sut] = $this->makeSut();
 
-        $this->assertFalse($sut->getStatus('22'));
-        $this->assertFalse($sut->getStatus('$1#0.0'));
-        $this->assertTrue($sut->getStatus('$1#1.0'));
-        $this->assertFalse($sut->getStatus('garbage'));
+        $this->assertFalse($sut->getStatus(output: '22'));
+        $this->assertFalse($sut->getStatus(output: '$1#0.0'));
+        $this->assertTrue($sut->getStatus(output: '$1#1.0'));
+        $this->assertFalse($sut->getStatus(output: 'garbage'));
     }
 
     #[Test]
@@ -400,8 +403,8 @@ class MutlucellTest extends TestCase
     {
         [$sut] = $this->makeSut();
 
-        $this->assertSame('987', $sut->getMessageId('$987#1.0'));
-        $this->assertNull($sut->getMessageId('garbage'));
+        $this->assertSame('987', $sut->getMessageId(output: '$987#1.0'));
+        $this->assertNull($sut->getMessageId(output: 'garbage'));
     }
 
     #[Test]
@@ -411,7 +414,7 @@ class MutlucellTest extends TestCase
         [$sut, $history] = $this->makeSut(['queue' => true], [], $history);
         Queue::fake();
 
-        $this->assertSame('queued', $sut->send('905551112233', 'hi'));
+        $this->assertSame('queued', $sut->send(receiver: '905551112233', message: 'hi'));
         $this->assertCount(0, $history);
     }
 
@@ -425,7 +428,7 @@ class MutlucellTest extends TestCase
             $history
         );
 
-        $sut->send('905551112233', 'hi');
+        $sut->send(receiver: '905551112233', message: 'hi');
 
         $xml = $this->xmlOf($history);
         $this->assertSame('turkish', (string) $xml['charset']);

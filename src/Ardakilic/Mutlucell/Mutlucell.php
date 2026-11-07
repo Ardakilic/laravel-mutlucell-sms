@@ -24,7 +24,7 @@ class Mutlucell
   protected $lang;
   protected $code;
 
-  protected $senderID;
+  protected $sender;
   protected $message;
 
   protected ?ClientInterface $httpClient = null;
@@ -54,7 +54,7 @@ class Mutlucell
   public function setConfig(array $config)
   {
     $this->config = $config;
-    $this->senderID = $this->config['default_sender'];
+    $this->sender = $this->config['default_sender'];
 
     // The user may have called setConfig() manually,
     // and the array may have missing arguments.
@@ -111,7 +111,7 @@ class Mutlucell
    * @param array $messages the messages array to be dispatched.
    * @return string the XML output
    */
-  private function generateXMLStringForSending($date = '', $messages = [])
+  private function generateXMLStringForSending(string $date = '', array $messages = [])
   {
     $smsXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smspack/>');
     $smsXMLElement->addAttribute('ka', $this->config['auth']['username']);
@@ -119,7 +119,7 @@ class Mutlucell
     if (strlen($date)) {
       $smsXMLElement->addAttribute('tarih', $date);
     }
-    $smsXMLElement->addAttribute('org', $this->senderID);
+    $smsXMLElement->addAttribute('org', $this->sender);
     $smsXMLElement->addAttribute('charset', $this->config['charset']);
     if ($this->config['append_unsubscribe_link'] === true) {
       $smsXMLElement->addAttribute('addLinkToEnd', 'true');
@@ -136,16 +136,17 @@ class Mutlucell
 
   /**
    * Send same bulk message to many people
-   * @param $recipients array recipients
-   * @param $message string message to be sent
-   * @param $date string when will the message be sent?
-   * @param $senderID string originator/sender id (may be a text or number)
+   * Call with PHP 8 named arguments, e.g. send(receiver: ..., message: ...).
+   * @param array|string $recipients recipients
+   * @param string $message message to be sent
+   * @param string $date when will the message be sent?
+   * @param string $sender originator/sender id (may be a text or number)
    * @return string status API response
    */
-  public function sendBulk($recipients, $message = '', $date = '', $senderID = '')
+  public function sendBulk(array|string $recipients, string $message = '', string $date = '', string $sender = '')
   {
-    // Checks the $message and $senderID, and initializes it
-    $this->initSenderAndMessage($message, $senderID);
+    // Checks the $message and $sender, and initializes it
+    $this->initSenderAndMessage($message, $sender);
 
     if (is_array($recipients)) {
       $recipients = implode(', ', $recipients);
@@ -165,16 +166,17 @@ class Mutlucell
 
   /**
    * Sends a single SMS to a single person
+   * Call with PHP 8 named arguments, e.g. send(receiver: ..., message: ...).
    * @param string $receiver receiver number
    * @param string $message message to be sent
    * @param string $date delivery date
-   * @param string $senderID originator/sender id (may be a text or number)
+   * @param string $sender originator/sender id (may be a text or number)
    * @return string status API response
    */
-  public function send($receiver, $message = '', $date = '', $senderID = '')
+  public function send(string $receiver, string $message = '', string $date = '', string $sender = '')
   {
-    // Checks the $message and $senderID, and initializes it
-    $this->initSenderAndMessage($message, $senderID);
+    // Checks the $message and $sender, and initializes it
+    $this->initSenderAndMessage($message, $sender);
 
     // Ensure that the receiver is not empty
     if ($receiver == null || !strlen(trim($receiver))) {
@@ -197,27 +199,30 @@ class Mutlucell
 
   /**
    * Sends multiple SMSes to various people with various content
-   * @param array $receiversMessage recipients and message
+   * Call with PHP 8 named arguments, e.g. send(receiver: ..., message: ...).
+   * @param array $messages recipients and message
    * @param string $date delivery date
-   * @param string $senderID originator/sender id (may be a text or number)
+   * @param string $sender originator/sender id (may be a text or number)
    * @return string status API response
    */
-  public function sendMulti($receiversMessage, $date = '', $senderID = '')
+  public function sendMulti(array $messages, string $date = '', string $sender = '')
   {
-    // initSenderAndMessage cannot be used, because receiversMessage is an array
-    if ($senderID == null || !strlen(trim($senderID))) {
-      $this->senderID = $this->config['default_sender'];
+    // initSenderAndMessage cannot be used, because messages is an array
+    if ($sender == null || !strlen(trim($sender))) {
+      $this->sender = $this->config['default_sender'];
+    } else {
+      $this->sender = $sender;
     }
 
-    $messages = [];
-    foreach ($receiversMessage as $eachMessageBlock) {
-      $messages[] = [
+    $preparedMessages = [];
+    foreach ($messages as $eachMessageBlock) {
+      $preparedMessages[] = [
         'text' => $eachMessageBlock[1], // Message
         'nums' => $eachMessageBlock[0], // Number(s)
       ];
     }
 
-    $xml = $this->generateXMLStringForSending($date, $messages);
+    $xml = $this->generateXMLStringForSending($date, $preparedMessages);
 
     return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
   }
@@ -225,37 +230,40 @@ class Mutlucell
 
   /**
    * Sends multiple SMSes to various people with various content with key and value pair
-   * @param array $receiversMessage recipients and message
+   * Call with PHP 8 named arguments, e.g. send(receiver: ..., message: ...).
+   * @param array $messages recipients and message
    * @param string $date delivery date
-   * @param string $senderID originator/sender id (may be a text or number)
+   * @param string $sender originator/sender id (may be a text or number)
    * @return string status API response
    */
-  public function sendMulti2($receiversMessage, $date = '', $senderID = '')
+  public function sendMulti2(array $messages, string $date = '', string $sender = '')
   {
-    // initSenderAndMessage cannot be used, because receiversMessage is an array
-    if ($senderID == null || !strlen(trim($senderID))) {
-      $this->senderID = $this->config['default_sender'];
+    // initSenderAndMessage cannot be used, because messages is an array
+    if ($sender == null || !strlen(trim($sender))) {
+      $this->sender = $this->config['default_sender'];
+    } else {
+      $this->sender = $sender;
     }
 
-    $messages = [];
-    foreach ($receiversMessage as $number => $message) {
-      $messages[] = [
+    $preparedMessages = [];
+    foreach ($messages as $number => $message) {
+      $preparedMessages[] = [
         'text' => $message,
         'nums' => $number,
       ];
     }
 
-    $xml = $this->generateXMLStringForSending($date, $messages);
+    $xml = $this->generateXMLStringForSending($date, $preparedMessages);
 
     return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
   }
 
   /**
    * Adds phone number(s) to the blacklist
-   * @param $phoneNumbers array|string The phone numbers
+   * @param array|string $phoneNumbers The phone numbers
    * @return string status API response
    */
-  public function addBlacklist($phoneNumbers = '')
+  public function addBlacklist(array|string $phoneNumbers = '')
   {
 
     if (is_array($phoneNumbers)) {
@@ -273,10 +281,10 @@ class Mutlucell
 
   /**
    * Deletes phone number(s) from the blacklist
-   * @param $phoneNumbers array|string The phone numbers
+   * @param array|string $phoneNumbers The phone numbers
    * @return string
    */
-  public function deleteBlackList($phoneNumbers = '')
+  public function deleteBlackList(array|string $phoneNumbers = '')
   {
     // If the <nums> parameter is blank, all users are removed from blacklist as Mutlucell Api says
 
@@ -327,11 +335,11 @@ class Mutlucell
   }
 
   /**
-   * @param $messageId String the id of the dispatched message
+   * @param string $messageId String the id of the dispatched message
    *
    * @return array|string
    */
-  public function getMessageReport($messageId)
+  public function getMessageReport(string $messageId)
   {
     $originatorsXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smsrapor/>');
     $originatorsXML->addAttribute('ka', $this->config['auth']['username']);
@@ -395,7 +403,7 @@ class Mutlucell
    * @param string $output API's response
    * @return string status code
    */
-  public function parseOutput($output)
+  public function parseOutput(string $output)
   {
     // if error code is returned, api OR the app will return an integer error code
     if ($this->isNum($output)) {
@@ -473,7 +481,7 @@ class Mutlucell
    * @param string $output API's response
    * @return boolean
    */
-  public function getStatus($output)
+  public function getStatus(string $output)
   {
     // If error code is returned, API will return an integer error code
     if ($this->isNum($output)) {
@@ -500,11 +508,11 @@ class Mutlucell
   }
 
   /**
-   * @param $output
+   * @param string $output
    *
    * @return string|null
    */
-  public function getMessageId($output)
+  public function getMessageId(string $output)
   {
     if (preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
       // Returned output is formatted like $ID#STATUS
@@ -521,16 +529,16 @@ class Mutlucell
    * Initialize Sender ID and message
    * The method also prevents duplicate usage
    * @param string $message message to be sent
-   * @param string $senderID originator ID
+   * @param string $sender originator ID
    */
-  protected function initSenderAndMessage($message, $senderID)
+  protected function initSenderAndMessage(string $message, string $sender)
   {
     // TODO a better method for this
     // Pre-checks act1
-    if ($senderID == null || !strlen(trim($senderID))) {
-      $this->senderID = $this->config['default_sender'];
+    if ($sender == null || !strlen(trim($sender))) {
+      $this->sender = $this->config['default_sender'];
     } else {
-      $this->senderID = $senderID;
+      $this->sender = $sender;
     }
 
     // Pre-checks act2
@@ -544,10 +552,11 @@ class Mutlucell
   /**
    * XML post sending method
    * @param string $xml formatted string
+   * @param string $url API endpoint URL
    * @return string API Status
    *
    */
-  private function postXML($xml, $url)
+  private function postXML(string $xml, string $url)
   {
     if ($this->config['queue']) {
       Queue::push(function () use ($xml, $url) {
