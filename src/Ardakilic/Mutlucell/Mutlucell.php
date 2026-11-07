@@ -13,7 +13,7 @@ namespace Ardakilic\Mutlucell;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request;
-use Queue;
+use Illuminate\Support\Facades\Queue;
 
 use SimpleXMLElement;
 
@@ -28,6 +28,8 @@ class Mutlucell
   protected $message;
 
   protected ?ClientInterface $httpClient = null;
+
+  private const SMS_ID_PATTERN = '/(\$[0-9]+\#[0-9]+\.[0-9]+)/i';
 
   /**
    * Create a new Mutlucell instance.
@@ -71,15 +73,9 @@ class Mutlucell
     if (!isset($this->config['default_sender'])) {
       throw new \Exception($this->lang['exceptions']['2']);
     }
-    if (!isset($this->config['queue'])) {
-      $this->config['queue'] = false;
-    }
-    if (!isset($this->config['charset'])) {
-      $this->config['charset'] = 'default';
-    }
-    if (!isset($this->config['append_unsubscribe_link'])) {
-      $this->config['append_unsubscribe_link'] = false;
-    }
+    $this->config['queue'] ??= false;
+    $this->config['charset'] ??= 'default';
+    $this->config['append_unsubscribe_link'] ??= false;
     return $this;
   }
 
@@ -106,6 +102,14 @@ class Mutlucell
   }
 
   /**
+   * Fall back to the configured default sender when none is given.
+   */
+  private function resolveSender(string $sender): string
+  {
+    return trim($sender) === '' ? $this->config['default_sender'] : $sender;
+  }
+
+  /**
    * The method that creates a XML string to send to Mutlucell API
    * @param string $date the date of the sms to be sent
    * @param array $messages the messages array to be dispatched.
@@ -116,7 +120,7 @@ class Mutlucell
     $smsXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smspack/>');
     $smsXMLElement->addAttribute('ka', $this->config['auth']['username']);
     $smsXMLElement->addAttribute('pwd', $this->config['auth']['password']);
-    if (strlen($date)) {
+    if ($date !== '') {
       $smsXMLElement->addAttribute('tarih', $date);
     }
     $smsXMLElement->addAttribute('org', $this->sender);
@@ -137,25 +141,21 @@ class Mutlucell
   /**
    * Send same bulk message to many people
    * Call with PHP 8 named arguments, e.g. send(receiver: ..., message: ...).
-   * @param array|string $recipients recipients
+   * @param array $recipients recipient list
    * @param string $message message to be sent
    * @param string $date when will the message be sent?
    * @param string $sender originator/sender id (may be a text or number)
    * @return string status API response
    */
-  public function sendBulk(array|string $recipients, string $message = '', string $date = '', string $sender = '')
+  public function sendBulk(array $recipients, string $message = '', string $date = '', string $sender = '')
   {
     // Checks the $message and $sender, and initializes it
     $this->initSenderAndMessage($message, $sender);
 
-    if (is_array($recipients)) {
-      $recipients = implode(', ', $recipients);
-    }
-
     $messages = [
       [
         'text' => $this->message,
-        'nums' => $recipients,
+        'nums' => implode(', ', $recipients),
       ]
     ];
 
@@ -179,7 +179,7 @@ class Mutlucell
     $this->initSenderAndMessage($message, $sender);
 
     // Ensure that the receiver is not empty
-    if ($receiver == null || !strlen(trim($receiver))) {
+    if (trim($receiver) === '') {
       // no receiver
       return 102;
     }
@@ -208,11 +208,7 @@ class Mutlucell
   public function sendMulti(array $messages, string $date = '', string $sender = '')
   {
     // initSenderAndMessage cannot be used, because messages is an array
-    if ($sender == null || !strlen(trim($sender))) {
-      $this->sender = $this->config['default_sender'];
-    } else {
-      $this->sender = $sender;
-    }
+    $this->sender = $this->resolveSender($sender);
 
     $preparedMessages = [];
     foreach ($messages as $eachMessageBlock) {
@@ -239,11 +235,7 @@ class Mutlucell
   public function sendMulti2(array $messages, string $date = '', string $sender = '')
   {
     // initSenderAndMessage cannot be used, because messages is an array
-    if ($sender == null || !strlen(trim($sender))) {
-      $this->sender = $this->config['default_sender'];
-    } else {
-      $this->sender = $sender;
-    }
+    $this->sender = $this->resolveSender($sender);
 
     $preparedMessages = [];
     foreach ($messages as $number => $message) {
@@ -353,28 +345,18 @@ class Mutlucell
         'success' => false,
       ];
 
-      switch ($result) {
-        case 20:
-          $report[] = [
-            'error_code' => 20,
-            'error_message' => $this->lang['reports']['20']
-          ];
+      $knownErrors = [
+        20 => $this->lang['reports']['20'],
+        23 => $this->lang['reports']['23'],
+        30 => $this->lang['reports']['30'],
+      ];
 
-          break;
-        case 23:
-          $report[] = [
-            'error_code' => 23,
-            'error_message' => $this->lang['reports']['23']
-          ];
-
-          break;
-        case 30:
-          $report[] = [
-            'error_code' => 30,
-            'error_message' => $this->lang['reports']['30']
-          ];
-
-          break;
+      $code = (int) $result;
+      if (isset($knownErrors[$code])) {
+        $report[] = [
+          'error_code' => $code,
+          'error_message' => $knownErrors[$code],
+        ];
       }
     } else {
       $messages = array_filter(explode("\n", $result));
@@ -407,64 +389,30 @@ class Mutlucell
   {
     // if error code is returned, api OR the app will return an integer error code
     if ($this->isNum($output)) {
-      switch ($output) {
-
-        case 20:
-          return $this->lang['reports']['20'];
-          break;
-
-        case 21:
-          return $this->lang['reports']['21'];
-          break;
-
-        case 22:
-          return $this->lang['reports']['22'];
-          break;
-
-        case 23:
-          return $this->lang['reports']['23'];
-          break;
-
-        case 24:
-          return $this->lang['reports']['24'];
-          break;
-
-        case 25:
-          return $this->lang['reports']['25'];
-          break;
-
-        case 30:
-          return $this->lang['reports']['30'];
-          break;
-
-
+      // $output is a digit string here, so the (int) cast preserves the old loose switch semantics
+      return match ((int) $output) {
+        20 => $this->lang['reports']['20'],
+        21 => $this->lang['reports']['21'],
+        22 => $this->lang['reports']['22'],
+        23 => $this->lang['reports']['23'],
+        24 => $this->lang['reports']['24'],
+        25 => $this->lang['reports']['25'],
+        30 => $this->lang['reports']['30'],
         // In-app messages:
-        case 100:
-          return $this->lang['app'][0];
-          break;
-
-        case 101:
-          return $this->lang['app'][1];
-          break;
-
-        case 102:
-          return $this->lang['app'][2];
-          break;
-
-        default:
-          return $this->lang['reports']['999'];
-          break;
-
-      }
+        100 => $this->lang['app'][0],
+        101 => $this->lang['app'][1],
+        102 => $this->lang['app'][2],
+        default => $this->lang['reports']['999'],
+      };
 
       // returns from Mutlucell
-    } elseif (preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
+    } elseif (preg_match(self::SMS_ID_PATTERN, $output)) {
       // Returned output is formatted like $ID#STATUS
       // E.g: $1234567#1.0
       $output = explode('#', $output);
 
       $status = $output[1];
-      if ($status == '0.0') {
+      if ($status === '0.0') {
         return $this->lang['app']['101'];
       } else {
         return $this->lang['app']['100'];
@@ -488,14 +436,14 @@ class Mutlucell
       return false;
 
       // returns from Mutlucell
-    } elseif (preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
+    } elseif (preg_match(self::SMS_ID_PATTERN, $output)) {
 
       // Returned output is formatted like $ID#STATUS
       // E.g: $1234567#1.0
       $output = explode('#', $output);
 
       $status = $output[1];
-      if ($status == '0.0') {
+      if ($status === '0.0') {
         return false;
       } else {
         return true;
@@ -514,7 +462,7 @@ class Mutlucell
    */
   public function getMessageId(string $output)
   {
-    if (preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
+    if (preg_match(self::SMS_ID_PATTERN, $output)) {
       // Returned output is formatted like $ID#STATUS
       // E.g: $1234567#1.0
       $output = explode('#', $output);
@@ -533,16 +481,9 @@ class Mutlucell
    */
   protected function initSenderAndMessage(string $message, string $sender)
   {
-    // TODO a better method for this
-    // Pre-checks act1
-    if ($sender == null || !strlen(trim($sender))) {
-      $this->sender = $this->config['default_sender'];
-    } else {
-      $this->sender = $sender;
-    }
+    $this->sender = $this->resolveSender($sender);
 
-    // Pre-checks act2
-    if ($message == null || !strlen(trim($message))) {
+    if (trim($message) === '') {
       $this->message = '&'; // Error character for sms
     } else {
       $this->message = $message;
@@ -576,17 +517,17 @@ class Mutlucell
 
 
   /**
-   * Checks whether the number is an integer or not with Regex
-   * !I'm not using is_int() because people may add numbers in quotes!
-   * Taken from PHP-Fusion <http://php-fusion.co.uk>
-   * @param string $value string to be checked
-   * @return boolean|int
+   * Checks whether the value is an integer or not (digits only, quotes allowed).
+   * @param mixed $value value to be checked
+   * @return bool
    */
-  private function isNum($value)
+  private function isNum(mixed $value): bool
   {
-    if (!is_array($value)) {
-      return preg_match("/^[0-9]+$/", $value);
+    if (is_array($value)) {
+      return false;
     }
-    return false;
+
+    // (string) cast keeps int inputs (e.g. 20) equivalent to their digit-string form
+    return ctype_digit((string) $value);
   }
 }

@@ -16,11 +16,6 @@ class MutlucellServiceProvider extends ServiceProvider
 {
 
   /**
-   * @var bool $defer Indicates if loading of the provider is deferred.
-   */
-  protected $defer = false;
-
-  /**
    * Boot the service provider.
    *
    * @return void
@@ -43,6 +38,7 @@ class MutlucellServiceProvider extends ServiceProvider
    */
   public function register()
   {
+    $this->mergeConfigFrom(__DIR__ . '/../../config/mutlucell.php', 'mutlucell');
     $this->app->singleton('mutlucell', function ($app) {
       return new Mutlucell($app);
     });

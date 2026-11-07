@@ -48,13 +48,13 @@ Metotlar artık PHP 8 isimli argümanlarla çağrılmalıdır. Parametre adları
 
 * `$senderID` -> `sender:`
 * `$receiversMessage` -> `messages:`
-* `$receiver` -> `receiver:`, `$recipients` -> `recipients:`, `$message` -> `message:`, `$date` -> `date:`, `$phoneNumbers` -> `phoneNumbers:`, `$messageId` -> `messageId:` (anlamları değişmedi, sadece isimli çağrıda bu adları kullanın)
+* `$receiver` -> `receiver:`, `$recipients` -> `recipients:` (artık sadece dizi kabul eder), `$message` -> `message:`, `$date` -> `date:`, `$phoneNumbers` -> `phoneNumbers:`, `$messageId` -> `messageId:` (anlamları değişmedi, sadece isimli çağrıda bu adları kullanın)
 
 Not: `sendMulti` / `sendMulti2` artık boş olmayan bir `sender:` değerini dikkate alır (önceden göz ardı edilip originator varsayılan olarak kalırdı).
 
 ```php
 // Eski
-Mutlucell::send(receiver: '05312345678', message: 'Merhaba');
+Mutlucell::send('05312345678', 'Merhaba');
 // Yeni
 Mutlucell::send(receiver: '05312345678', message: 'Merhaba');
 ```
@@ -99,13 +99,6 @@ if(Mutlucell::getStatus(output: $send)) {
 $kisiler = ['00905312345678', '+905351114478', '05369998874', '5315558896'];
 $send = Mutlucell::sendBulk(recipients: $kisiler, message: 'Merhaba');
 var_dump(Mutlucell::parseOutput(output: $send));
-```
-
-Veya 
-
-```php
-$send = Mutlucell::sendBulk(recipients: '00905312345678, +905351114478, 05369998874, 5315558896', message: 'Merhaba');
-Mutlucell::parseOutput(output: $send);
 ```
 
 #### Birden fazla kişiye aynı anda farklı SMS'ler göndermek için:

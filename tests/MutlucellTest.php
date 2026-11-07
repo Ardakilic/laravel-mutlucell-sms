@@ -185,14 +185,12 @@ class MutlucellTest extends TestCase
     }
 
     #[Test]
-    public function send_bulk_with_string_recipients(): void
+    public function send_bulk_rejects_string_recipients(): void
     {
-        $history = [];
-        [$sut, $history] = $this->makeSut([], ['$1#1.0'], $history);
+        [$sut] = $this->makeSut();
 
+        $this->expectException(\TypeError::class);
         $sut->sendBulk(recipients: '905551112233', message: 'hi');
-
-        $this->assertSame('905551112233', (string) $this->xmlOf($history)->mesaj->nums);
     }
 
     #[Test]
