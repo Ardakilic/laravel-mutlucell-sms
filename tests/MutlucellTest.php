@@ -340,6 +340,18 @@ class MutlucellTest extends TestCase
     }
 
     #[Test]
+    public function get_message_report_unknown_numeric_error_falls_back(): void
+    {
+        [$sut] = $this->makeSut([], ['21']);
+
+        $report = $sut->getMessageReport(messageId: 1);
+
+        $this->assertFalse($report['success']);
+        $this->assertSame(21, $report['error']['error_code']);
+        $this->assertSame('Unknwon error', $report['error']['error_message']);
+    }
+
+    #[Test]
     public function get_message_report_success(): void
     {
         [$sut] = $this->makeSut([], ["905551112233 3\n905544443322 99\n"]);

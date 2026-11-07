@@ -146,7 +146,7 @@ class Mutlucell
 
   /**
    * Send same bulk message to many people
-   * Call with PHP 8 named arguments, e.g. send(receiver: ..., message: ...).
+   * Call with PHP 8 named arguments, e.g. sendBulk(recipients: [...], message: ...).
    * @param array $recipients recipient list
    * @param string $message message to be sent
    * @param string $date when will the message be sent?
@@ -309,11 +309,11 @@ class Mutlucell
   }
 
   /**
-   * @param string $messageId String the id of the dispatched message
+   * @param string|int $messageId String the id of the dispatched message
    *
    * @return array
    */
-  public function getMessageReport(string $messageId): array
+  public function getMessageReport(string|int $messageId): array
   {
     $originatorsXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smsrapor/>');
     $originatorsXML->addAttribute('ka', $this->config['auth']['username']);
@@ -334,12 +334,11 @@ class Mutlucell
       ];
 
       $code = (int) $result;
-      if (isset($knownErrors[$code])) {
-        $report['error'] = [
-          'error_code' => $code,
-          'error_message' => $knownErrors[$code],
-        ];
-      }
+      // Unknown numeric codes fall back to the generic error message, like parseOutput() does
+      $report['error'] = [
+        'error_code' => $code,
+        'error_message' => $knownErrors[$code] ?? $this->lang['reports']['999'],
+      ];
     } else {
       $messages = array_filter(explode("\n", $result));
       $report = [
