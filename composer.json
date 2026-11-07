@@ -33,8 +33,8 @@
     }
   },
   "require-dev": {
-    "phpunit/phpunit": "^12.5",
-    "orchestra/testbench": "^11.0"
+    "phpunit/phpunit": "^13.0",
+    "orchestra/testbench": "^11.1"
   },
   "scripts": {
     "test": "phpunit --no-coverage",
