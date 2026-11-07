@@ -44,46 +44,42 @@ jobs:
         run: |
           set -u
           cover() {
-            # $1 = source dir, $2 = file to write "NN.N" or "n/a" into.
-            # Prints the phpunit log; returns phpunit's exit code (0 when skipped).
+            # $1 = source dir. Runs the suite; leaves coverage/clover.xml behind when supported.
+            # Returns phpunit's exit code (0 when skipped).
             if [ ! -f "$1/phpunit.xml" ] || [ ! -d "$1/tests" ]; then
-              echo "n/a" > "$2"
               return 0
             fi
             (cd "$1" && composer install -q --no-interaction --prefer-dist --no-progress && vendor/bin/phpunit --coverage-clover=coverage/clover.xml --coverage-text --only-summary-for-coverage-text)
-            status=$?
-            if [ -f "$1/coverage/clover.xml" ]; then
-              php -r '$x = simplexml_load_file($argv[1]); $m = $x->project->metrics; printf("%.1f", 100 * (int) $m["coveredstatements"] / (int) $m["statements"]);' "$1/coverage/clover.xml" > "$2"
-            else
-              echo "n/a" > "$2"
-            fi
-            return $status
+          }
+          pct() {
+            # $1 = clover file. Prints "lines methods classes" ("n/a" each when missing).
+            # Classes are counted covered only when all their methods are covered, like PHPUnit does.
+            php -r '$f = $argv[1]; if (!is_file($f)) { echo "n/a n/a n/a"; } else { $x = simplexml_load_file($f); $m = $x->project->metrics; $l = (int) $m["statements"] ? sprintf("%.1f", 100 * (int) $m["coveredstatements"] / (int) $m["statements"]) : "n/a"; $e = (int) $m["methods"] ? sprintf("%.1f", 100 * (int) $m["coveredmethods"] / (int) $m["methods"]) : "n/a"; $t = $c = 0; foreach ($x->xpath("//class") as $cl) { $cm = $cl->metrics; $t++; if ((int) $cm["coveredmethods"] === (int) $cm["methods"]) { $c++; } } echo "$l $e " . ($t ? sprintf("%.1f", 100 * $c / $t) : "n/a"); }' "$1"
+          }
+          delta() {
+            # $1 = base, $2 = head. Prints "+N.N" or "n/a".
+            if [ "$1" = "n/a" ] || [ "$2" = "n/a" ]; then echo "n/a"; else php -r 'printf("%+.1f", $argv[2] - $argv[1]);' "$1" "$2"; fi
           }
           BASE_STATUS=0
           HEAD_STATUS=0
-          cover "$GITHUB_WORKSPACE/base" /tmp/cov-base.txt || BASE_STATUS=$?
-          cover "$GITHUB_WORKSPACE/head" /tmp/cov-head.txt || HEAD_STATUS=$?
-          BASE_COV=$(cat /tmp/cov-base.txt)
-          HEAD_COV=$(cat /tmp/cov-head.txt)
-          if [ "$BASE_COV" = "n/a" ] || [ "$HEAD_COV" = "n/a" ]; then
-            DELTA="n/a"
-          else
-            DELTA=$(php -r 'printf("%+.1f", $argv[2] - $argv[1]);' "$BASE_COV" "$HEAD_COV")
-          fi
+          cover "$GITHUB_WORKSPACE/base" || BASE_STATUS=$?
+          cover "$GITHUB_WORKSPACE/head" || HEAD_STATUS=$?
+          read -r BL BM BC <<< "$(pct "$GITHUB_WORKSPACE/base/coverage/clover.xml")"
+          read -r HL HM HC <<< "$(pct "$GITHUB_WORKSPACE/head/coverage/clover.xml")"
+          DL=$(delta "$BL" "$HL"); DM=$(delta "$BM" "$HM"); DC=$(delta "$BC" "$HC")
           {
             echo "## Coverage: base vs head"
             echo ""
-            echo "| Ref | Line coverage |"
-            echo "| --- | --- |"
-            echo "| base (\`${{ github.base_ref }}\`) | ${BASE_COV}% |"
-            echo "| head (\`${{ github.head_ref }}\`) | ${HEAD_COV}% |"
-            echo "| delta | ${DELTA} |"
+            echo "| Metric | base (\`${{ github.base_ref }}\`) | head (\`${{ github.head_ref }}\`) | delta |"
+            echo "| --- | --- | --- | --- |"
+            echo "| Lines | ${BL}% | ${HL}% | ${DL} |"
+            echo "| Methods | ${BM}% | ${HM}% | ${DM} |"
+            echo "| Classes | ${BC}% | ${HC}% | ${DC} |"
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "base=${BASE_COV}% head=${HEAD_COV}% delta=${DELTA}"
-          echo "base_cov=${BASE_COV}" >> "$GITHUB_OUTPUT"
-          echo "head_cov=${HEAD_COV}" >> "$GITHUB_OUTPUT"
-          echo "delta=${DELTA}" >> "$GITHUB_OUTPUT"
-          echo "head_status=${HEAD_STATUS}" >> "$GITHUB_OUTPUT"
+          printf "%s\n" "| Lines | ${BL}% | ${HL}% | ${DL} |" "| Methods | ${BM}% | ${HM}% | ${DM} |" "| Classes | ${BC}% | ${HC}% | ${DC} |"
+          for v in "lines_base=$BL" "lines_head=$HL" "lines_delta=$DL" "methods_base=$BM" "methods_head=$HM" "methods_delta=$DM" "classes_base=$BC" "classes_head=$HC" "classes_delta=$DC" "head_status=$HEAD_STATUS"; do
+            echo "$v" >> "$GITHUB_OUTPUT"
+          done
 
       - name: Comment coverage on PR
         if: always()
@@ -91,20 +87,27 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref }}
           HEAD_REF: ${{ github.head_ref }}
-          BASE_COV: ${{ steps.measure.outputs.base_cov }}
-          HEAD_COV: ${{ steps.measure.outputs.head_cov }}
-          DELTA: ${{ steps.measure.outputs.delta }}
+          LINES_BASE: ${{ steps.measure.outputs.lines_base }}
+          LINES_HEAD: ${{ steps.measure.outputs.lines_head }}
+          LINES_DELTA: ${{ steps.measure.outputs.lines_delta }}
+          METHODS_BASE: ${{ steps.measure.outputs.methods_base }}
+          METHODS_HEAD: ${{ steps.measure.outputs.methods_head }}
+          METHODS_DELTA: ${{ steps.measure.outputs.methods_delta }}
+          CLASSES_BASE: ${{ steps.measure.outputs.classes_base }}
+          CLASSES_HEAD: ${{ steps.measure.outputs.classes_head }}
+          CLASSES_DELTA: ${{ steps.measure.outputs.classes_delta }}
         with:
           script: |
-            const { BASE_REF, HEAD_REF, BASE_COV, HEAD_COV, DELTA } = process.env;
+            const { BASE_REF, HEAD_REF } = process.env;
+            const row = (label, b, h, d) => '| ' + label + ' | ' + b + '% | ' + h + '% | ' + d + ' |';
             const body = [
               '## Coverage: base vs head',
               '',
-              '| Ref | Line coverage |',
-              '| --- | --- |',
-              '| base (`' + BASE_REF + '`) | ' + BASE_COV + '% |',
-              '| head (`' + HEAD_REF + '`) | ' + HEAD_COV + '% |',
-              '| delta | ' + DELTA + ' |',
+              '| Metric | base (`' + BASE_REF + '`) | head (`' + HEAD_REF + '`) | delta |',
+              '| --- | --- | --- | --- |',
+              row('Lines', process.env.LINES_BASE, process.env.LINES_HEAD, process.env.LINES_DELTA),
+              row('Methods', process.env.METHODS_BASE, process.env.METHODS_HEAD, process.env.METHODS_DELTA),
+              row('Classes', process.env.CLASSES_BASE, process.env.CLASSES_HEAD, process.env.CLASSES_DELTA),
             ].join('\n');
             await github.rest.issues.createComment({
               owner: context.repo.owner,
