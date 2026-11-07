@@ -1,0 +1,6 @@
+services:
+  tests:
+    build: .
+    volumes:
+      - .:/app
+    command: sh -c "composer install --no-interaction --prefer-dist && vendor/bin/phpunit --coverage-text --only-summary-for-coverage-text --coverage-clover=coverage/clover.xml"

@@ -4,3 +4,6 @@
 composer.lock
 vendor
 .vscode/*
+coverage/
+.phpunit.cache/
+.phpunit.result.cache
