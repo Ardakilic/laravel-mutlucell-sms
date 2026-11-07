@@ -29,6 +29,12 @@ class Mutlucell
 
   protected ?ClientInterface $httpClient = null;
 
+  /**
+   * Create a new Mutlucell instance.
+   *
+   * @param mixed $app Laravel application/container
+   * @param \GuzzleHttp\ClientInterface|null $httpClient injectable HTTP client (mainly for testing)
+   */
   public function __construct($app, ?ClientInterface $httpClient = null)
   {
     $this->app = $app;
@@ -77,12 +83,23 @@ class Mutlucell
     return $this;
   }
 
+  /**
+   * Inject a custom HTTP client (e.g. a Guzzle MockHandler stack in tests).
+   *
+   * @param \GuzzleHttp\ClientInterface $client
+   * @return $this
+   */
   public function setHttpClient(ClientInterface $client): static
   {
     $this->httpClient = $client;
     return $this;
   }
 
+  /**
+   * Resolve the HTTP client, lazily creating a default Guzzle client.
+   *
+   * @return \GuzzleHttp\ClientInterface
+   */
   protected function httpClient(): ClientInterface
   {
     return $this->httpClient ??= new Client();

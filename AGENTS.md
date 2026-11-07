@@ -20,7 +20,7 @@ Mutlucell SMS API wrapper for Laravel. Sends XML POST requests to
 - `composer install` (inside Docker; no local PHP needed)
 
 ## Tests
-- `docker compose run --rm tests` or `docker compose up --build tests`
+- `make test` (preferred) or `docker compose run --rm tests` or `docker compose up --build --abort-on-container-exit --exit-code-from tests`
 - Never hit the live API: all HTTP is mocked (Guzzle MockHandler).
 - `composer test` = no coverage; `composer test:coverage` = text summary + clover.
 
