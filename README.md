@@ -233,6 +233,17 @@ Yapılacaklar
 * Kara Listeye giren kullanıcı listesini alma metodu
 * ?
 
+Testler
+----
+
+```shell
+make test
+```
+
+Testler Docker içinde çalışır (yerel PHP gerekmez), tüm HTTP istekleri
+mock'lanır (Guzzle MockHandler), gerçek Mutlucell API'ına istek atılmaz.
+Alternatif: `docker compose run --rm tests`.
+
 Lisans
 ----
 

@@ -11,6 +11,7 @@ namespace Ardakilic\Mutlucell;
  */
 
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request;
 use Queue;
 
@@ -26,9 +27,18 @@ class Mutlucell
   protected $senderID;
   protected $message;
 
-  public function __construct($app)
+  protected ?ClientInterface $httpClient = null;
+
+  /**
+   * Create a new Mutlucell instance.
+   *
+   * @param mixed $app Laravel application/container
+   * @param \GuzzleHttp\ClientInterface|null $httpClient injectable HTTP client (mainly for testing)
+   */
+  public function __construct($app, ?ClientInterface $httpClient = null)
   {
     $this->app = $app;
+    $this->httpClient = $httpClient;
     $locale = $app['config']['app.locale'];
     $this->lang = $app['translator']->get("mutlucell::{$locale}");
     $this->setConfig($app['config']['mutlucell']);
@@ -71,6 +81,28 @@ class Mutlucell
       $this->config['append_unsubscribe_link'] = false;
     }
     return $this;
+  }
+
+  /**
+   * Inject a custom HTTP client (e.g. a Guzzle MockHandler stack in tests).
+   *
+   * @param \GuzzleHttp\ClientInterface $client
+   * @return $this
+   */
+  public function setHttpClient(ClientInterface $client): static
+  {
+    $this->httpClient = $client;
+    return $this;
+  }
+
+  /**
+   * Resolve the HTTP client, lazily creating a default Guzzle client.
+   *
+   * @return \GuzzleHttp\ClientInterface
+   */
+  protected function httpClient(): ClientInterface
+  {
+    return $this->httpClient ??= new Client();
   }
 
   /**
@@ -527,7 +559,7 @@ class Mutlucell
       return 'queued';
     }
 
-    $client = new Client();
+    $client = $this->httpClient();
     $request = new Request('POST', $url, ['Content-Type' => 'text/xml; charset=UTF8'], $xml);
     $response = $client->send($request);
     return $response->getBody()->getContents();

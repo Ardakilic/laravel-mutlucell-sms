@@ -1,0 +1,9 @@
+services:
+  tests:
+    build: .
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      COMPOSER_HOME: /tmp/composer
+    volumes:
+      - .:/app
+    command: sh -c "composer install --no-interaction --prefer-dist && vendor/bin/phpunit --coverage-text --only-summary-for-coverage-text --coverage-clover=coverage/clover.xml"
