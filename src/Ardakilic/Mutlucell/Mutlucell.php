@@ -470,12 +470,15 @@ class Mutlucell
   private function postXML(string $xml, string $url)
   {
     if ($this->config['queue']) {
+      // @codeCoverageIgnoreStart
+      // The closure below runs inside the queue worker process, never under PHPUnit (Queue::fake() intercepts the push).
       Queue::push(function () use ($xml, $url) {
         $client = new Client();
         $request = new Request('POST', $url, ['Content-Type' => 'text/xml; charset=UTF8'], $xml);
         $response = $client->send($request);
         return $response->getBody()->getContents();
       });
+      // @codeCoverageIgnoreEnd
       return 'queued';
     }
 

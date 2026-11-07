@@ -11,6 +11,8 @@ on:
 
 permissions:
   contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
   coverage:
@@ -37,6 +39,7 @@ jobs:
           tools: composer
 
       - name: Measure coverage on base and head
+        id: measure
         run: |
           set -u
           cover() {
@@ -76,4 +79,55 @@ jobs:
             echo "| delta | ${DELTA} |"
           } >> "$GITHUB_STEP_SUMMARY"
           echo "base=${BASE_COV}% head=${HEAD_COV}% delta=${DELTA}"
-          exit $HEAD_STATUS
+          echo "base_cov=${BASE_COV}" >> "$GITHUB_OUTPUT"
+          echo "head_cov=${HEAD_COV}" >> "$GITHUB_OUTPUT"
+          echo "delta=${DELTA}" >> "$GITHUB_OUTPUT"
+          echo "head_status=${HEAD_STATUS}" >> "$GITHUB_OUTPUT"
+
+      - name: Comment coverage on PR
+        if: always()
+        uses: actions/github-script@v8
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_COV: ${{ steps.measure.outputs.base_cov }}
+          HEAD_COV: ${{ steps.measure.outputs.head_cov }}
+          DELTA: ${{ steps.measure.outputs.delta }}
+        with:
+          script: |
+            const marker = '<!-- mutlucell-coverage-report -->';
+            const { BASE_REF, HEAD_REF, BASE_COV, HEAD_COV, DELTA } = process.env;
+            const body = [
+              marker,
+              '## Coverage: base vs head',
+              '',
+              '| Ref | Line coverage |',
+              '| --- | --- |',
+              '| base (`' + BASE_REF + '`) | ' + BASE_COV + '% |',
+              '| head (`' + HEAD_REF + '`) | ' + HEAD_COV + '% |',
+              '| delta | ' + DELTA + ' |',
+            ].join('\n');
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail if head tests failed
+        run: exit ${{ steps.measure.outputs.head_status }}

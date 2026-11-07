@@ -373,6 +373,16 @@ class MutlucellTest extends TestCase
     }
 
     #[Test]
+    public function is_num_rejects_arrays(): void
+    {
+        [$sut] = $this->makeSut();
+        $isNum = new \ReflectionMethod(Mutlucell::class, 'isNum');
+        $isNum->setAccessible(true);
+
+        $this->assertFalse($isNum->invoke($sut, []));
+    }
+
+    #[Test]
     public function get_status(): void
     {
         [$sut] = $this->makeSut();
