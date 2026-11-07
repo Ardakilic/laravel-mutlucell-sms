@@ -48,6 +48,8 @@ Metotlar artık PHP 8 isimli argümanlarla çağrılmalıdır. Parametre adları
 
 * `$senderID` -> `sender:`
 * `$receiversMessage` -> `messages:` (`sendMulti2` `sendMulti` oldu; liste-içi-liste formatı kalktı, sadece `numara => mesaj` eşlemesi)
+* `sendBulk(recipients:)` ve kara liste metotları artık sadece dizi kabul eder (`phoneNumbers:`)
+* `deleteBlackList` -> `deleteBlacklist`; numarasız çağrı tüm listeyi sildiği için artık `confirm: true` ister (`deleteBlacklist(confirm: true)`), aksi halde `InvalidArgumentException` atar
 * `$receiver` -> `receiver:`, `$recipients` -> `recipients:` (artık sadece dizi kabul eder), `$message` -> `message:`, `$date` -> `date:`, `$phoneNumbers` -> `phoneNumbers:`, `$messageId` -> `messageId:` (anlamları değişmedi, sadece isimli çağrıda bu adları kullanın)
 
 Not: `sendMulti` artık boş olmayan bir `sender:` değerini dikkate alır (önceden göz ardı edilip originator varsayılan olarak kalırdı).
@@ -129,20 +131,6 @@ var_dump(Mutlucell::parseOutput(output: $send));
 #### Bir veya birden Fazla Kullanıcıyı Kara Listeye Eklemek İçin
 
 ```php
-$sil = Mutlucell::addBlacklist(phoneNumbers: '00905312345678');
-var_dump(Mutlucell::parseOutput(output: $sil));
-```
-
-Veya
-
-```php
-$sil = Mutlucell::addBlacklist(phoneNumbers: '00905312345678, +905351114478, 05369998874, 5315558896');
-var_dump(Mutlucell::parseOutput(output: $sil));
-```
-
-Veya
-
-```php
 $kisiler = ['00905312345678', '+905351114478', '05369998874', '5315558896'];
 $sil = Mutlucell::addBlacklist(phoneNumbers: $kisiler);
 var_dump(Mutlucell::parseOutput(output: $sil));
@@ -152,30 +140,15 @@ var_dump(Mutlucell::parseOutput(output: $sil));
 #### Bir veya Birden Fazla Kullanıcıyı Kara Listeden Çıkartmak İçin
 
 ```php
-$sil = Mutlucell::deleteBlackList(phoneNumbers: '00905312345678');
-var_dump(Mutlucell::parseOutput(output: $sil));
-```
-
-Veya
-
-
-```php
-$sil = Mutlucell::deleteBlackList(phoneNumbers: '00905312345678, +905351114478, 05369998874, 5315558896');
-var_dump(Mutlucell::parseOutput(output: $sil));
-```
-
-Veya
-
-```php
 $kisiler = ['00905312345678', '+905351114478', '05369998874', '5315558896'];
-$sil = Mutlucell::deleteBlackList(phoneNumbers: $kisiler);
+$sil = Mutlucell::deleteBlacklist(phoneNumbers: $kisiler);
 var_dump(Mutlucell::parseOutput(output: $sil));
 ```
 
-Eğer tüm kullanıcıları kara listeden çıkartmak istiyorsanız parametre boş olmalı:
+Eğer tüm kullanıcıları kara listeden çıkartmak istiyorsanız `confirm: true` ile çağırın (parametresiz çağrı hata verir):
 
 ```php
-$sil = Mutlucell::deleteBlackList();
+$sil = Mutlucell::deleteBlacklist(confirm: true);
 var_dump(Mutlucell::parseOutput(output: $sil));
 ```
 

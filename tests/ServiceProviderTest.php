@@ -4,7 +4,6 @@ namespace Ardakilic\Mutlucell\Tests;
 
 use Ardakilic\Mutlucell\Facades\Mutlucell as MutlucellFacade;
 use Ardakilic\Mutlucell\Mutlucell;
-use Ardakilic\Mutlucell\MutlucellServiceProvider;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionMethod;
 
@@ -17,14 +16,6 @@ class ServiceProviderTest extends TestCase
 
         $this->assertInstanceOf(Mutlucell::class, $instance);
         $this->assertSame($instance, $this->app->make('mutlucell'));
-    }
-
-    #[Test]
-    public function provides_mutlucell(): void
-    {
-        $provides = (new MutlucellServiceProvider($this->app))->provides();
-
-        $this->assertContains('mutlucell', $provides);
     }
 
     #[Test]

@@ -43,14 +43,4 @@ class MutlucellServiceProvider extends ServiceProvider
       return new Mutlucell($app);
     });
   }
-
-  /**
-   * Get the services provided by the provider.
-   *
-   * @return array
-   */
-  public function provides()
-  {
-    return ['mutlucell'];
-  }
 }

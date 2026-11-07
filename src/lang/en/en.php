@@ -61,6 +61,7 @@ return [
     '0' => 'Mutlucell auth parameter is not set in the config!',
     '1' => 'Mutlucell Auth User and Password are not set correctly!',
     '2' => 'Mutlucell Default sender (originator) is not set!',
+    '3' => 'To delete all users from the blacklist, call with confirm: true!',
 
   ],
 

@@ -175,25 +175,14 @@ class Mutlucell
    */
   public function send(string $receiver, string $message = '', string $date = '', string $sender = '')
   {
-    // Checks the $message and $sender, and initializes it
-    $this->initSenderAndMessage($message, $sender);
-
     // Ensure that the receiver is not empty
     if (trim($receiver) === '') {
       // no receiver
       return 102;
     }
 
-    $messages = [
-      [
-        'text' => $this->message,
-        'nums' => $receiver,
-      ]
-    ];
-
-    $xml = $this->generateXMLStringForSending($date, $messages);
-
-    return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
+    // A single send is a one-recipient bulk send
+    return $this->sendBulk(recipients: [$receiver], message: $message, date: $date, sender: $sender);
   }
 
 
@@ -228,42 +217,50 @@ class Mutlucell
    * @param array|string $phoneNumbers The phone numbers
    * @return string status API response
    */
-  public function addBlacklist(array|string $phoneNumbers = '')
+  /**
+   * Adds phone number(s) to the blacklist
+   * Call with PHP 8 named arguments, e.g. addBlacklist(phoneNumbers: ['905551112233']).
+   * @param array $phoneNumbers The phone numbers
+   * @return string status API response
+   */
+  public function addBlacklist(array $phoneNumbers = [])
   {
-
-    if (is_array($phoneNumbers)) {
-      $phoneNumbers = implode(', ', $phoneNumbers);
-    }
-
-    $blXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><addblacklist/>');
-    $blXMLElement->addAttribute('ka', $this->config['auth']['username']);
-    $blXMLElement->addAttribute('pwd', $this->config['auth']['password']);
-    $blXMLElement->addChild('nums', $phoneNumbers);
-    $xml = $blXMLElement->asXML();
-
-    return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/addblklst');
+    return $this->postBlacklist($phoneNumbers, 'addblacklist', 'https://smsgw.mutlucell.com/smsgw-ws/addblklst');
   }
 
   /**
-   * Deletes phone number(s) from the blacklist
-   * @param array|string $phoneNumbers The phone numbers
+   * Deletes phone number(s) from the blacklist.
+   * With no numbers the API wipes the entire blacklist, so that requires confirm: true.
+   * Call with PHP 8 named arguments, e.g. deleteBlacklist(phoneNumbers: [...]) or deleteBlacklist(confirm: true).
+   * @param array $phoneNumbers The phone numbers
+   * @param bool $confirm Required when $phoneNumbers is empty (delete all)
    * @return string
    */
-  public function deleteBlackList(array|string $phoneNumbers = '')
+  public function deleteBlacklist(array $phoneNumbers = [], bool $confirm = false)
   {
-    // If the <nums> parameter is blank, all users are removed from blacklist as Mutlucell Api says
-
-    if (is_array($phoneNumbers)) {
-      $phoneNumbers = implode(', ', $phoneNumbers);
+    if ($phoneNumbers === [] && !$confirm) {
+      throw new \InvalidArgumentException($this->lang['exceptions']['3']);
     }
 
-    $blXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><dltblacklist/>');
+    return $this->postBlacklist($phoneNumbers, 'dltblacklist', 'https://smsgw.mutlucell.com/smsgw-ws/dltblklst');
+  }
+
+  /**
+   * Shared blacklist XML post helper.
+   * @param array $phoneNumbers The phone numbers (empty = whole blacklist for delete)
+   * @param string $root XML root element
+   * @param string $url API endpoint URL
+   * @return string API Status
+   */
+  private function postBlacklist(array $phoneNumbers, string $root, string $url): string
+  {
+    $blXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><' . $root . '/>');
     $blXMLElement->addAttribute('ka', $this->config['auth']['username']);
     $blXMLElement->addAttribute('pwd', $this->config['auth']['password']);
-    $blXMLElement->addChild('nums', $phoneNumbers);
+    $blXMLElement->addChild('nums', implode(', ', $phoneNumbers));
     $xml = $blXMLElement->asXML();
 
-    return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/dltblklst');
+    return $this->postXML($xml, $url);
   }
 
   /**

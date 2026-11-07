@@ -222,14 +222,12 @@ class MutlucellTest extends TestCase
     }
 
     #[Test]
-    public function add_blacklist_string(): void
+    public function add_blacklist_rejects_string(): void
     {
-        $history = [];
-        [$sut, $history] = $this->makeSut([], ['added'], $history);
+        [$sut] = $this->makeSut();
 
-        $this->assertSame('added', $sut->addBlacklist(phoneNumbers: '905551112233'));
-        $this->assertStringContainsString('addblklst', (string) $history[0]['request']->getUri());
-        $this->assertSame('905551112233', (string) $this->xmlOf($history)->nums);
+        $this->expectException(\TypeError::class);
+        $sut->addBlacklist(phoneNumbers: '905551112233');
     }
 
     #[Test]
@@ -240,6 +238,7 @@ class MutlucellTest extends TestCase
 
         $sut->addBlacklist(phoneNumbers: ['905551112233', '905544443322']);
 
+        $this->assertStringContainsString('addblklst', (string) $history[0]['request']->getUri());
         $this->assertSame('905551112233, 905544443322', (string) $this->xmlOf($history)->nums);
     }
 
@@ -255,14 +254,12 @@ class MutlucellTest extends TestCase
     }
 
     #[Test]
-    public function delete_blacklist_string(): void
+    public function delete_blacklist_rejects_string(): void
     {
-        $history = [];
-        [$sut, $history] = $this->makeSut([], ['deleted'], $history);
+        [$sut] = $this->makeSut();
 
-        $this->assertSame('deleted', $sut->deleteBlackList(phoneNumbers: '905551112233'));
-        $this->assertStringContainsString('dltblklst', (string) $history[0]['request']->getUri());
-        $this->assertSame('905551112233', (string) $this->xmlOf($history)->nums);
+        $this->expectException(\TypeError::class);
+        $sut->deleteBlacklist(phoneNumbers: '905551112233');
     }
 
     #[Test]
@@ -271,18 +268,28 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['deleted'], $history);
 
-        $sut->deleteBlackList(phoneNumbers: ['905551112233', '905544443322']);
+        $sut->deleteBlacklist(phoneNumbers: ['905551112233', '905544443322']);
 
+        $this->assertStringContainsString('dltblklst', (string) $history[0]['request']->getUri());
         $this->assertSame('905551112233, 905544443322', (string) $this->xmlOf($history)->nums);
     }
 
     #[Test]
-    public function delete_blacklist_empty_removes_all(): void
+    public function delete_blacklist_empty_requires_confirm(): void
+    {
+        [$sut] = $this->makeSut();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $sut->deleteBlacklist();
+    }
+
+    #[Test]
+    public function delete_blacklist_confirmed_empty_removes_all(): void
     {
         $history = [];
         [$sut, $history] = $this->makeSut([], ['deleted'], $history);
 
-        $sut->deleteBlackList();
+        $sut->deleteBlacklist(confirm: true);
 
         $this->assertSame('', (string) $this->xmlOf($history)->nums);
     }
