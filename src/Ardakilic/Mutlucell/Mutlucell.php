@@ -13,7 +13,7 @@ namespace Ardakilic\Mutlucell;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request;
-use Queue;
+use Illuminate\Support\Facades\Queue;
 
 use SimpleXMLElement;
 
@@ -24,10 +24,21 @@ class Mutlucell
   protected $lang;
   protected $code;
 
-  protected $senderID;
+  protected $sender;
   protected $message;
 
   protected ?ClientInterface $httpClient = null;
+
+  /**
+   * Values returned by getStatus(). Compare with === for clarity, e.g.
+   * getStatus(output: $send) === Mutlucell::STATUS_SUCCESS.
+   * Note: facades proxy methods only, so reference these on
+   * Ardakilic\Mutlucell\Mutlucell, not on the facade alias.
+   */
+  public const bool STATUS_SUCCESS = true;
+  public const bool STATUS_FAILED = false;
+
+  private const string SMS_ID_PATTERN = '/(\$[0-9]+\#[0-9]+\.[0-9]+)/i';
 
   /**
    * Create a new Mutlucell instance.
@@ -49,37 +60,28 @@ class Mutlucell
    *
    * @param array $config
    * @return $this
-   * @throws \Exception if auth parameter or originator is not set
+   * @throws \InvalidArgumentException if auth parameter or originator is not set
    */
-  public function setConfig(array $config)
+  public function setConfig(array $config): static
   {
-    $this->config = $config;
-    $this->senderID = $this->config['default_sender'];
-
     // The user may have called setConfig() manually,
     // and the array may have missing arguments.
     // So, we're checking whether they are set, and filling them if not set
     // Critical ones will throw exceptions, non-critical ones will set default values
-    // TODO: Refactor this method
-    if (!isset($this->config['auth'])) {
-      throw new \Exception($this->lang['exceptions']['0']);
-    } else {
-      if (!isset($this->config['auth']['username']) || !isset($this->config['auth']['password'])) {
-        throw new \Exception($this->lang['exceptions']['1']);
-      }
+    if (!isset($config['auth'])) {
+      throw new \InvalidArgumentException($this->lang['exceptions']['0']);
     }
-    if (!isset($this->config['default_sender'])) {
-      throw new \Exception($this->lang['exceptions']['2']);
+    if (!isset($config['auth']['username']) || !isset($config['auth']['password'])) {
+      throw new \InvalidArgumentException($this->lang['exceptions']['1']);
     }
-    if (!isset($this->config['queue'])) {
-      $this->config['queue'] = false;
+    if (!isset($config['default_sender'])) {
+      throw new \InvalidArgumentException($this->lang['exceptions']['2']);
     }
-    if (!isset($this->config['charset'])) {
-      $this->config['charset'] = 'default';
-    }
-    if (!isset($this->config['append_unsubscribe_link'])) {
-      $this->config['append_unsubscribe_link'] = false;
-    }
+    $this->config = $config;
+    $this->sender = $config['default_sender'];
+    $this->config['queue'] ??= false;
+    $this->config['charset'] ??= 'default';
+    $this->config['append_unsubscribe_link'] ??= false;
     return $this;
   }
 
@@ -106,20 +108,46 @@ class Mutlucell
   }
 
   /**
+   * Fall back to the configured default sender when none is given.
+   */
+  private function resolveSender(string $sender): string
+  {
+    return trim($sender) === '' ? $this->config['default_sender'] : $sender;
+  }
+
+  /**
+   * Serialize a built XML element, failing loud on the (practically unreachable)
+   * serialization failure instead of posting garbage.
+   * @return string XML output
+   */
+  private function toXml(SimpleXMLElement $element): string
+  {
+    $xml = $element->asXML();
+    // @codeCoverageIgnoreStart
+    // asXML() only returns false when serialization itself fails, which the
+    // public API cannot trigger; excluded from coverage like the queue closure.
+    if ($xml === false) {
+      throw new \RuntimeException('Failed to build Mutlucell XML payload.');
+    }
+    // @codeCoverageIgnoreEnd
+    return $xml;
+  }
+
+  /**
    * The method that creates a XML string to send to Mutlucell API
    * @param string $date the date of the sms to be sent
    * @param array $messages the messages array to be dispatched.
    * @return string the XML output
    */
-  private function generateXMLStringForSending($date = '', $messages = [])
+  private function generateXMLStringForSending(string $date = '', array $messages = []): string
   {
     $smsXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smspack/>');
     $smsXMLElement->addAttribute('ka', $this->config['auth']['username']);
     $smsXMLElement->addAttribute('pwd', $this->config['auth']['password']);
-    if (strlen($date)) {
+    if ($date !== '') {
       $smsXMLElement->addAttribute('tarih', $date);
     }
-    $smsXMLElement->addAttribute('org', $this->senderID);
+    $smsXMLElement->addAttribute('org', $this->sender);
     $smsXMLElement->addAttribute('charset', $this->config['charset']);
     if ($this->config['append_unsubscribe_link'] === true) {
       $smsXMLElement->addAttribute('addLinkToEnd', 'true');
@@ -131,30 +159,32 @@ class Mutlucell
       $message->addChild('nums', $eachMessage['nums']);
     }
 
-    return $smsXMLElement->asXML();
+    return $this->toXml($smsXMLElement);
   }
 
   /**
    * Send same bulk message to many people
-   * @param $recipients array recipients
-   * @param $message string message to be sent
-   * @param $date string when will the message be sent?
-   * @param $senderID string originator/sender id (may be a text or number)
-   * @return string status API response
+   * Call with PHP 8 named arguments, e.g. sendBulk(recipients: [...], message: ...).
+   * @param array $recipients recipient list
+   * @param string $message message to be sent
+   * @param string $date when will the message be sent?
+   * @param string $sender originator/sender id (may be a text or number)
+   * @return string|int status API response (102 when no recipients)
    */
-  public function sendBulk($recipients, $message = '', $date = '', $senderID = '')
+  public function sendBulk(array $recipients, string $message = '', string $date = '', string $sender = ''): string|int
   {
-    // Checks the $message and $senderID, and initializes it
-    $this->initSenderAndMessage($message, $senderID);
-
-    if (is_array($recipients)) {
-      $recipients = implode(', ', $recipients);
+    // No recipients, no send (same 102 as send() with an empty receiver)
+    if ($recipients === []) {
+      return 102;
     }
+
+    // Checks the $message and $sender, and initializes it
+    $this->initSenderAndMessage($message, $sender);
 
     $messages = [
       [
         'text' => $this->message,
-        'nums' => $recipients,
+        'nums' => implode(', ', $recipients),
       ]
     ];
 
@@ -165,132 +195,97 @@ class Mutlucell
 
   /**
    * Sends a single SMS to a single person
+   * Call with PHP 8 named arguments, e.g. send(receiver: ..., message: ...).
    * @param string $receiver receiver number
    * @param string $message message to be sent
    * @param string $date delivery date
-   * @param string $senderID originator/sender id (may be a text or number)
-   * @return string status API response
+   * @param string $sender originator/sender id (may be a text or number)
+   * @return string|int status API response (102 when receiver is empty)
    */
-  public function send($receiver, $message = '', $date = '', $senderID = '')
+  public function send(string $receiver, string $message = '', string $date = '', string $sender = ''): string|int
   {
-    // Checks the $message and $senderID, and initializes it
-    $this->initSenderAndMessage($message, $senderID);
-
     // Ensure that the receiver is not empty
-    if ($receiver == null || !strlen(trim($receiver))) {
+    if (trim($receiver) === '') {
       // no receiver
       return 102;
     }
 
-    $messages = [
-      [
-        'text' => $this->message,
-        'nums' => $receiver,
-      ]
-    ];
-
-    $xml = $this->generateXMLStringForSending($date, $messages);
-
-    return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
+    // A single send is a one-recipient bulk send
+    return $this->sendBulk(recipients: [$receiver], message: $message, date: $date, sender: $sender);
   }
 
 
   /**
-   * Sends multiple SMSes to various people with various content
-   * @param array $receiversMessage recipients and message
+   * Sends multiple SMSes to various people with various content (number => message pairs)
+   * Call with PHP 8 named arguments, e.g. sendMulti(messages: ['905551112233' => 'Hi']).
+   * @param array $messages recipients and message
    * @param string $date delivery date
-   * @param string $senderID originator/sender id (may be a text or number)
+   * @param string $sender originator/sender id (may be a text or number)
    * @return string status API response
    */
-  public function sendMulti($receiversMessage, $date = '', $senderID = '')
+  public function sendMulti(array $messages, string $date = '', string $sender = ''): string
   {
-    // initSenderAndMessage cannot be used, because receiversMessage is an array
-    if ($senderID == null || !strlen(trim($senderID))) {
-      $this->senderID = $this->config['default_sender'];
-    }
+    // initSenderAndMessage cannot be used, because messages is an array
+    $this->sender = $this->resolveSender($sender);
 
-    $messages = [];
-    foreach ($receiversMessage as $eachMessageBlock) {
-      $messages[] = [
-        'text' => $eachMessageBlock[1], // Message
-        'nums' => $eachMessageBlock[0], // Number(s)
-      ];
-    }
-
-    $xml = $this->generateXMLStringForSending($date, $messages);
-
-    return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
-  }
-
-
-  /**
-   * Sends multiple SMSes to various people with various content with key and value pair
-   * @param array $receiversMessage recipients and message
-   * @param string $date delivery date
-   * @param string $senderID originator/sender id (may be a text or number)
-   * @return string status API response
-   */
-  public function sendMulti2($receiversMessage, $date = '', $senderID = '')
-  {
-    // initSenderAndMessage cannot be used, because receiversMessage is an array
-    if ($senderID == null || !strlen(trim($senderID))) {
-      $this->senderID = $this->config['default_sender'];
-    }
-
-    $messages = [];
-    foreach ($receiversMessage as $number => $message) {
-      $messages[] = [
+    $preparedMessages = [];
+    foreach ($messages as $number => $message) {
+      $preparedMessages[] = [
         'text' => $message,
         'nums' => $number,
       ];
     }
 
-    $xml = $this->generateXMLStringForSending($date, $messages);
+    $xml = $this->generateXMLStringForSending($date, $preparedMessages);
 
     return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
   }
 
   /**
    * Adds phone number(s) to the blacklist
-   * @param $phoneNumbers array|string The phone numbers
+   * Call with PHP 8 named arguments, e.g. addBlacklist(phoneNumbers: ['905551112233']).
+   * @param array $phoneNumbers The phone numbers
    * @return string status API response
    */
-  public function addBlacklist($phoneNumbers = '')
+  public function addBlacklist(array $phoneNumbers = []): string
   {
-
-    if (is_array($phoneNumbers)) {
-      $phoneNumbers = implode(', ', $phoneNumbers);
-    }
-
-    $blXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><addblacklist/>');
-    $blXMLElement->addAttribute('ka', $this->config['auth']['username']);
-    $blXMLElement->addAttribute('pwd', $this->config['auth']['password']);
-    $blXMLElement->addChild('nums', $phoneNumbers);
-    $xml = $blXMLElement->asXML();
-
-    return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/addblklst');
+    return $this->postBlacklist($phoneNumbers, 'addblacklist', 'https://smsgw.mutlucell.com/smsgw-ws/addblklst');
   }
 
   /**
-   * Deletes phone number(s) from the blacklist
-   * @param $phoneNumbers array|string The phone numbers
+   * Deletes phone number(s) from the blacklist.
+   * With no numbers the API wipes the entire blacklist, so that requires confirm: true.
+   * Call with PHP 8 named arguments, e.g. deleteBlacklist(phoneNumbers: [...]) or deleteBlacklist(confirm: true).
+   * @param array $phoneNumbers The phone numbers
+   * @param bool $confirm Required when $phoneNumbers is empty (delete all)
    * @return string
+   * @throws \InvalidArgumentException when $phoneNumbers is empty without $confirm
    */
-  public function deleteBlackList($phoneNumbers = '')
+  public function deleteBlacklist(array $phoneNumbers = [], bool $confirm = false): string
   {
-    // If the <nums> parameter is blank, all users are removed from blacklist as Mutlucell Api says
-
-    if (is_array($phoneNumbers)) {
-      $phoneNumbers = implode(', ', $phoneNumbers);
+    if ($phoneNumbers === [] && !$confirm) {
+      throw new \InvalidArgumentException($this->lang['exceptions']['3']);
     }
 
-    $blXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><dltblacklist/>');
+    return $this->postBlacklist($phoneNumbers, 'dltblacklist', 'https://smsgw.mutlucell.com/smsgw-ws/dltblklst');
+  }
+
+  /**
+   * Shared blacklist XML post helper.
+   * @param array $phoneNumbers The phone numbers (empty = whole blacklist for delete)
+   * @param string $root XML root element
+   * @param string $url API endpoint URL
+   * @return string API Status
+   */
+  private function postBlacklist(array $phoneNumbers, string $root, string $url): string
+  {
+    $blXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><' . $root . '/>');
     $blXMLElement->addAttribute('ka', $this->config['auth']['username']);
     $blXMLElement->addAttribute('pwd', $this->config['auth']['password']);
-    $blXMLElement->addChild('nums', $phoneNumbers);
-    $xml = $blXMLElement->asXML();
+    $blXMLElement->addChild('nums', implode(', ', $phoneNumbers));
+    $xml = $this->toXml($blXMLElement);
 
-    return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/dltblklst');
+    return $this->postXML($xml, $url);
   }
 
   /**
@@ -298,12 +293,12 @@ class Mutlucell
    * Shows how much SMS you have left
    * @return integer number of SMSes left for the account
    */
-  public function checkBalance()
+  public function checkBalance(): int
   {
     $creditXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smskredi/>');
     $creditXML->addAttribute('ka', $this->config['auth']['username']);
     $creditXML->addAttribute('pwd', $this->config['auth']['password']);
-    $xml = $creditXML->asXML();
+    $xml = $this->toXml($creditXML);
 
     $response = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtcrdtex');
 
@@ -316,28 +311,28 @@ class Mutlucell
    * Lists the originators associated for the account
    * @return string list of originators
    */
-  public function listOriginators()
+  public function listOriginators(): string
   {
     $originatorsXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smsorig/>');
     $originatorsXML->addAttribute('ka', $this->config['auth']['username']);
     $originatorsXML->addAttribute('pwd', $this->config['auth']['password']);
-    $xml = $originatorsXML->asXML();
+    $xml = $this->toXml($originatorsXML);
 
     return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtorgex');
   }
 
   /**
-   * @param $messageId String the id of the dispatched message
+   * @param string|int $messageId String the id of the dispatched message
    *
-   * @return array|string
+   * @return array
    */
-  public function getMessageReport($messageId)
+  public function getMessageReport(string|int $messageId): array
   {
     $originatorsXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smsrapor/>');
     $originatorsXML->addAttribute('ka', $this->config['auth']['username']);
     $originatorsXML->addAttribute('pwd', $this->config['auth']['password']);
     $originatorsXML->addAttribute('id', $messageId);
-    $xml = $originatorsXML->asXML();
+    $xml = $this->toXml($originatorsXML);
 
     $result = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtblkrprtex');
     if ($this->isNum($result)) {
@@ -345,29 +340,18 @@ class Mutlucell
         'success' => false,
       ];
 
-      switch ($result) {
-        case 20:
-          $report[] = [
-            'error_code' => 20,
-            'error_message' => $this->lang['reports']['20']
-          ];
+      $knownErrors = [
+        20 => $this->lang['reports']['20'],
+        23 => $this->lang['reports']['23'],
+        30 => $this->lang['reports']['30'],
+      ];
 
-          break;
-        case 23:
-          $report[] = [
-            'error_code' => 23,
-            'error_message' => $this->lang['reports']['23']
-          ];
-
-          break;
-        case 30:
-          $report[] = [
-            'error_code' => 30,
-            'error_message' => $this->lang['reports']['30']
-          ];
-
-          break;
-      }
+      $code = (int) $result;
+      // Unknown numeric codes fall back to the generic error message, like parseOutput() does
+      $report['error'] = [
+        'error_code' => $code,
+        'error_message' => $knownErrors[$code] ?? $this->lang['reports']['999'],
+      ];
     } else {
       $messages = array_filter(explode("\n", $result));
       $report = [
@@ -392,71 +376,27 @@ class Mutlucell
 
   /**
    * Parse the output
-   * @param string $output API's response
-   * @return string status code
+   * @param string|int $output API's response (send() may return int error codes, e.g. 102)
+   * @return string|int status code
    */
-  public function parseOutput($output)
+  public function parseOutput(string|int $output): string|int
   {
     // if error code is returned, api OR the app will return an integer error code
     if ($this->isNum($output)) {
-      switch ($output) {
-
-        case 20:
-          return $this->lang['reports']['20'];
-          break;
-
-        case 21:
-          return $this->lang['reports']['21'];
-          break;
-
-        case 22:
-          return $this->lang['reports']['22'];
-          break;
-
-        case 23:
-          return $this->lang['reports']['23'];
-          break;
-
-        case 24:
-          return $this->lang['reports']['24'];
-          break;
-
-        case 25:
-          return $this->lang['reports']['25'];
-          break;
-
-        case 30:
-          return $this->lang['reports']['30'];
-          break;
-
-
-        // In-app messages:
-        case 100:
-          return $this->lang['app'][0];
-          break;
-
-        case 101:
-          return $this->lang['app'][1];
-          break;
-
-        case 102:
-          return $this->lang['app'][2];
-          break;
-
-        default:
-          return $this->lang['reports']['999'];
-          break;
-
+      $code = (int) $output;
+      // In-app messages live in lang.app keyed 0..2 for codes 100..102
+      if ($code >= 100 && $code <= 102) {
+        return $this->lang['app'][$code - 100];
       }
-
-      // returns from Mutlucell
-    } elseif (preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
+      // Vendor codes (20..30) resolve straight from lang.reports; anything else is unknown
+      return $this->lang['reports'][(string) $code] ?? $this->lang['reports']['999'];
+    } elseif (preg_match(self::SMS_ID_PATTERN, $output)) {
       // Returned output is formatted like $ID#STATUS
       // E.g: $1234567#1.0
       $output = explode('#', $output);
 
       $status = $output[1];
-      if ($status == '0.0') {
+      if ($status === '0.0') {
         return $this->lang['app']['101'];
       } else {
         return $this->lang['app']['100'];
@@ -470,24 +410,24 @@ class Mutlucell
 
   /**
    * Gets the SMS's status
-   * @param string $output API's response
-   * @return boolean
+   * @param string|int $output API's response (send() may return int error codes, e.g. 102)
+   * @return boolean Mutlucell::STATUS_SUCCESS or Mutlucell::STATUS_FAILED
    */
-  public function getStatus($output)
+  public function getStatus(string|int $output): bool
   {
     // If error code is returned, API will return an integer error code
     if ($this->isNum($output)) {
       return false;
 
       // returns from Mutlucell
-    } elseif (preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
+    } elseif (preg_match(self::SMS_ID_PATTERN, $output)) {
 
       // Returned output is formatted like $ID#STATUS
       // E.g: $1234567#1.0
       $output = explode('#', $output);
 
       $status = $output[1];
-      if ($status == '0.0') {
+      if ($status === '0.0') {
         return false;
       } else {
         return true;
@@ -500,13 +440,13 @@ class Mutlucell
   }
 
   /**
-   * @param $output
+   * @param string $output
    *
    * @return string|null
    */
-  public function getMessageId($output)
+  public function getMessageId(string $output): string|null
   {
-    if (preg_match('/(\$[0-9]+\#[0-9]+\.[0-9]+)/i', $output)) {
+    if (preg_match(self::SMS_ID_PATTERN, $output)) {
       // Returned output is formatted like $ID#STATUS
       // E.g: $1234567#1.0
       $output = explode('#', $output);
@@ -521,20 +461,13 @@ class Mutlucell
    * Initialize Sender ID and message
    * The method also prevents duplicate usage
    * @param string $message message to be sent
-   * @param string $senderID originator ID
+   * @param string $sender originator ID
    */
-  protected function initSenderAndMessage($message, $senderID)
+  protected function initSenderAndMessage(string $message, string $sender): void
   {
-    // TODO a better method for this
-    // Pre-checks act1
-    if ($senderID == null || !strlen(trim($senderID))) {
-      $this->senderID = $this->config['default_sender'];
-    } else {
-      $this->senderID = $senderID;
-    }
+    $this->sender = $this->resolveSender($sender);
 
-    // Pre-checks act2
-    if ($message == null || !strlen(trim($message))) {
+    if (trim($message) === '') {
       $this->message = '&'; // Error character for sms
     } else {
       $this->message = $message;
@@ -544,18 +477,22 @@ class Mutlucell
   /**
    * XML post sending method
    * @param string $xml formatted string
+   * @param string $url API endpoint URL
    * @return string API Status
    *
    */
-  private function postXML($xml, $url)
+  private function postXML(string $xml, string $url): string
   {
     if ($this->config['queue']) {
+      // @codeCoverageIgnoreStart
+      // The closure below runs inside the queue worker process, never under PHPUnit (Queue::fake() intercepts the push).
       Queue::push(function () use ($xml, $url) {
         $client = new Client();
         $request = new Request('POST', $url, ['Content-Type' => 'text/xml; charset=UTF8'], $xml);
         $response = $client->send($request);
         return $response->getBody()->getContents();
       });
+      // @codeCoverageIgnoreEnd
       return 'queued';
     }
 
@@ -567,17 +504,17 @@ class Mutlucell
 
 
   /**
-   * Checks whether the number is an integer or not with Regex
-   * !I'm not using is_int() because people may add numbers in quotes!
-   * Taken from PHP-Fusion <http://php-fusion.co.uk>
-   * @param string $value string to be checked
-   * @return boolean|int
+   * Checks whether the value is an integer or not (digits only, quotes allowed).
+   * @param mixed $value value to be checked
+   * @return bool
    */
-  private function isNum($value)
+  private function isNum(mixed $value): bool
   {
-    if (!is_array($value)) {
-      return preg_match("/^[0-9]+$/", $value);
+    if (is_array($value)) {
+      return false;
     }
-    return false;
+
+    // (string) cast keeps int inputs (e.g. 20) equivalent to their digit-string form
+    return ctype_digit((string) $value);
   }
 }

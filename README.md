@@ -42,21 +42,56 @@ Ayrıca environment dosyanıza `MUTLUCELL_USERNAME`, `MUTLUCELL_PASSWORD` ve `MU
 Kullanım
 -------------
 
+#### Yükseltme (v2 / Breaking change)
+
+Metotlar artık PHP 8 isimli argümanlarla çağrılmalıdır. Parametre adları değişti:
+
+* `$senderID` -> `sender:`
+* `$receiversMessage` -> `messages:` (`sendMulti2` `sendMulti` oldu; liste-içi-liste formatı kalktı, sadece `numara => mesaj` eşlemesi)
+* `sendBulk(recipients:)` ve kara liste metotları artık sadece dizi kabul eder (`phoneNumbers:`)
+* `sendBulk(recipients: [])` boş diziyle istek atmadan `102` döner (`send()` ile tutarlı)
+* `getMessageReport` hata biçimi değişti: `$report[0]` yerine `$report['error']` (`error_code` / `error_message`)
+* Config ve `confirm` hataları artık `InvalidArgumentException` (`\Exception` yerine)
+* Tüm public metotlara dönüş tipi eklendi (`send(): string|int`, `checkBalance(): int`, …)
+* Yeni sabitler: `Mutlucell::STATUS_SUCCESS` / `Mutlucell::STATUS_FAILED` (`getStatus` dönüşüyle `===` ile karşılaştırın; facade üzerinden değil sınıf üzerinden erişilir)
+* `deleteBlackList` -> `deleteBlacklist`; numarasız çağrı tüm listeyi sildiği için artık `confirm: true` ister (`deleteBlacklist(confirm: true)`), aksi halde `InvalidArgumentException` atar
+* `$receiver` -> `receiver:`, `$recipients` -> `recipients:` (artık sadece dizi kabul eder), `$message` -> `message:`, `$date` -> `date:`, `$phoneNumbers` -> `phoneNumbers:`, `$messageId` -> `messageId:` (anlamları değişmedi, sadece isimli çağrıda bu adları kullanın)
+
+Not: `sendMulti` artık boş olmayan bir `sender:` değerini dikkate alır (önceden göz ardı edilip originator varsayılan olarak kalırdı).
+
+```php
+// Eski
+Mutlucell::send('05312345678', 'Merhaba');
+// Yeni
+Mutlucell::send(receiver: '05312345678', message: 'Merhaba');
+```
+
 #### Birine o anda tekil SMS göndermek için:
 
 ```php
-$send = Mutlucell::send('05312345678', 'Merhaba');
-var_dump(Mutlucell::parseOutput($send));
+$send = Mutlucell::send(receiver: '05312345678', message: 'Merhaba');
+var_dump(Mutlucell::parseOutput(output: $send));
 ```
 
 #### SMS gönderildi mi ?
 
 ```php
-$send = Mutlucell::send('05312345678', 'Merhaba');
-if(Mutlucell::getStatus($send)) {
+$send = Mutlucell::send(receiver: '05312345678', message: 'Merhaba');
+if(Mutlucell::getStatus(output: $send)) {
   echo 'SMS başarı ile gönderildi!';
 } else {
   echo 'SMS gönderilemedi';
+}
+```
+
+Durumu sabitlerle karşılaştırmak için (facade sabitleri aktarmaz, sınıfı ayrı
+bir adla içeri alın):
+
+```php
+use Ardakilic\Mutlucell\Mutlucell as SmsStatus;
+
+if (Mutlucell::getStatus(output: $send) === SmsStatus::STATUS_SUCCESS) {
+  echo 'SMS başarı ile gönderildi!';
 }
 ```
 
@@ -67,9 +102,9 @@ Gönderilen mesajın durumunu (karşı tarafa ulaşıp ulaşmadığı) takip ede
 Aşağıdaki şekilde, SMS ID edinip, daha sonra bununla sorgulama yapabilirsiniz. 
 
 ```php
-$send = Mutlucell::send('05312345678', 'Merhaba');
-if(Mutlucell::getStatus($send)) {
-  $messageId = Mutlucell::getMessageId($send);
+$send = Mutlucell::send(receiver: '05312345678', message: 'Merhaba');
+if(Mutlucell::getStatus(output: $send)) {
+  $messageId = Mutlucell::getMessageId(output: $send);
   echo 'SMS başarı ile gönderildi! SMS ID: '. $messageId;
 } else {
   echo 'SMS gönderilemedi';
@@ -80,112 +115,74 @@ if(Mutlucell::getStatus($send)) {
 
 ```php
 $kisiler = ['00905312345678', '+905351114478', '05369998874', '5315558896'];
-$send = Mutlucell::sendBulk($kisiler, 'Merhaba');
-var_dump(Mutlucell::parseOutput($send));
-```
-
-Veya 
-
-```php
-$send = Mutlucell::sendBulk('00905312345678, +905351114478, 05369998874, 5315558896', 'Merhaba');
-Mutlucell::parseOutput($send);
+$send = Mutlucell::sendBulk(recipients: $kisiler, message: 'Merhaba');
+var_dump(Mutlucell::parseOutput(output: $send));
 ```
 
 #### Birden fazla kişiye aynı anda farklı SMS'ler göndermek için:
 
 ```php
 $kisiMesajlar = [
-  ['05315558964', 'Merhaba1'],
-  ['+905415589632', 'Merhaba2'],
-  ['00905369998874', 'Merhaba3']
+  '05315558964' => 'Merhaba1',
+  '+905415589632' => 'Merhaba2',
+  '00905369998874' => 'Merhaba3'
 ];
-$send = Mutlucell::sendMulti($kisiMesajlar);
-var_dump(Mutlucell::parseOutput($send));
-```
-
-Veya
-
-```php
-$kisiMesajlar = [
-  ['05315558964' => 'Merhaba1'],
-  ['+905415589632' => 'Merhaba2'],
-  ['00905369998874' => 'Merhaba3']
-];
-$send = Mutlucell::sendMulti2($kisiMesajlar);
-var_dump(Mutlucell::parseOutput($send));
+$send = Mutlucell::sendMulti(messages: $kisiMesajlar);
+var_dump(Mutlucell::parseOutput(output: $send));
 ```
 
 #### Gönderilen mesajın durumunu sorgulamak için:
 
 ```bash
->>> \Mutlucell::getMessageReport('1234567890');
+>>> \Mutlucell::getMessageReport(messageId: '1234567890');
 => [
-    [
-      "number" => "905321234567",
-      "result" => "3",
-      "result_text" => "Başarılı",
+    'success' => true,
+    'numbers' => [
+      '905321234567' => [
+        'success' => true,
+        'number' => '905321234567',
+        'result' => '3',
+        'result_text' => 'Başarılı',
+      ],
     ],
+   ]
+
+# Hatalı ID'de:
+=> [
+    'success' => false,
+    'error' => ['error_code' => 20, 'error_message' => '...'],
    ]
 ```
 
 #### Bir veya birden Fazla Kullanıcıyı Kara Listeye Eklemek İçin
 
 ```php
-$sil = Mutlucell::addBlacklist('00905312345678');
-var_dump(Mutlucell::parseOutput($sil));
-```
-
-Veya
-
-```php
-$sil = Mutlucell::addBlacklist('00905312345678, +905351114478, 05369998874, 5315558896');
-var_dump(Mutlucell::parseOutput($sil));
-```
-
-Veya
-
-```php
 $kisiler = ['00905312345678', '+905351114478', '05369998874', '5315558896'];
-$sil = Mutlucell::addBlacklist($kisiler);
-var_dump(Mutlucell::parseOutput($sil));
+$sil = Mutlucell::addBlacklist(phoneNumbers: $kisiler);
+var_dump(Mutlucell::parseOutput(output: $sil));
 ```
 
 
 #### Bir veya Birden Fazla Kullanıcıyı Kara Listeden Çıkartmak İçin
 
 ```php
-$sil = Mutlucell::deleteBlackList('00905312345678');
-var_dump(Mutlucell::parseOutput($sil));
-```
-
-Veya
-
-
-```php
-$sil = Mutlucell::deleteBlackList('00905312345678, +905351114478, 05369998874, 5315558896');
-var_dump(Mutlucell::parseOutput($sil));
-```
-
-Veya
-
-```php
 $kisiler = ['00905312345678', '+905351114478', '05369998874', '5315558896'];
-$sil = Mutlucell::deleteBlackList($kisiler);
-var_dump(Mutlucell::parseOutput($sil));
+$sil = Mutlucell::deleteBlacklist(phoneNumbers: $kisiler);
+var_dump(Mutlucell::parseOutput(output: $sil));
 ```
 
-Eğer tüm kullanıcıları kara listeden çıkartmak istiyorsanız parametre boş olmalı:
+Eğer tüm kullanıcıları kara listeden çıkartmak istiyorsanız `confirm: true` ile çağırın (parametresiz çağrı hata verir):
 
 ```php
-$sil = Mutlucell::deleteBlackList();
-var_dump(Mutlucell::parseOutput($sil));
+$sil = Mutlucell::deleteBlacklist(confirm: true);
+var_dump(Mutlucell::parseOutput(output: $sil));
 ```
 
 #### Farklı bir ayar dosyası ile SMS göndermek için
 
 ```php
 $gonder = Mutlucell::setConfig(config('app.baskaConfig'))
-  ->send('05312345678', 'Merhaba');
+  ->send(receiver: '05312345678', message: 'Merhaba');
 ```
 
 Hatta
@@ -199,7 +196,7 @@ $sms = Mutlucell::setConfig([
   'default_sender' => 'baskaoriginator',
 ]);
 
-$sms->send('05312345678', 'Merhaba');
+$sms->send(receiver: '05312345678', message: 'Merhaba');
 ```
 
 
@@ -218,13 +215,13 @@ var_dump(Mutlucell::listOriginators());
 #### Gelecek bir tarihe SMS yollamak için:
 
 ```php
-Mutlucell::send('05312223665', 'Geç gidecek mesaj', '2099-06-30 15:00'); // Saniye yok, dikkat!
+Mutlucell::send(receiver: '05312223665', message: 'Geç gidecek mesaj', date: '2099-06-30 15:00'); // Saniye yok, dikkat!
 ```
 
 #### Farklı bir Originatör (Sender ID) kullanarak SMS yollamak için:
 
 ```php
-Mutlucell::send('05312223665', 'merhaba', '', 'diğerOriginator');
+Mutlucell::send(receiver: '05312223665', message: 'merhaba', sender: 'diğerOriginator');
 ```
 
 Yapılacaklar

@@ -61,6 +61,7 @@ return [
     '0' => 'Mutlucell auth parametresi ayarlarda tanımlanmamış!',
     '1' => 'Mutlucell Auth User and Password are not set correctly!',
     '2' => 'Mutlucell Default sender (originator) is not set!',
+    '3' => 'Kara listedeki tüm kullanıcıları silmek için confirm: true ile çağırın!',
 
   ],
 
