@@ -15,6 +15,7 @@ Mutlucell SMS API wrapper for Laravel. Sends XML POST requests to
 - `src/config/mutlucell.php` — `auth`, `default_sender`, `queue`, `charset`, `append_unsubscribe_link`
 - `src/lang/en/en.php`, `src/lang/tr/tr.php` — `reports`/`sms`/`app`/`exceptions` strings
 - `tests/` — `TestCase.php`, `MutlucellTest.php`, `ServiceProviderTest.php`, `LangTest.php`
+- `.github/workflows/coverage.yml` — PR coverage report (base vs head)
 
 ## Install
 - `composer install` (inside Docker; no local PHP needed)
