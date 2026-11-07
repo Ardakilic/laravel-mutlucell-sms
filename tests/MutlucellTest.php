@@ -371,6 +371,8 @@ class MutlucellTest extends TestCase
         $this->assertSame('No SMS sent', $sut->parseOutput(output: '$456#0.0'));
         $this->assertSame('something-else', $sut->parseOutput(output: 'something-else'));
         $this->assertSame('Misformatted Recipent(s), all of them have to be an integer', $sut->parseOutput(output: 102));
+        $this->assertSame('Unknwon error', $sut->parseOutput(output: '45'));
+        $this->assertSame('Unknwon error', $sut->parseOutput(output: 45));
     }
 
     #[Test]

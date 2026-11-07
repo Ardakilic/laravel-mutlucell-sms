@@ -359,23 +359,13 @@ class Mutlucell
   {
     // if error code is returned, api OR the app will return an integer error code
     if ($this->isNum($output)) {
-      // $output is a digit string here, so the (int) cast preserves the old loose switch semantics
-      return match ((int) $output) {
-        20 => $this->lang['reports']['20'],
-        21 => $this->lang['reports']['21'],
-        22 => $this->lang['reports']['22'],
-        23 => $this->lang['reports']['23'],
-        24 => $this->lang['reports']['24'],
-        25 => $this->lang['reports']['25'],
-        30 => $this->lang['reports']['30'],
-        // In-app messages:
-        100 => $this->lang['app'][0],
-        101 => $this->lang['app'][1],
-        102 => $this->lang['app'][2],
-        default => $this->lang['reports']['999'],
-      };
-
-      // returns from Mutlucell
+      $code = (int) $output;
+      // In-app messages live in lang.app keyed 0..2 for codes 100..102
+      if ($code >= 100 && $code <= 102) {
+        return $this->lang['app'][$code - 100];
+      }
+      // Vendor codes (20..30) resolve straight from lang.reports; anything else is unknown
+      return $this->lang['reports'][(string) $code] ?? $this->lang['reports']['999'];
     } elseif (preg_match(self::SMS_ID_PATTERN, $output)) {
       // Returned output is formatted like $ID#STATUS
       // E.g: $1234567#1.0
