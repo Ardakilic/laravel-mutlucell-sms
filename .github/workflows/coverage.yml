@@ -3,6 +3,11 @@ name: Coverage
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'composer.json'
+      - 'phpunit.xml'
 
 permissions:
   contents: read
