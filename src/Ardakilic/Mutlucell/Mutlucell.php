@@ -116,12 +116,30 @@ class Mutlucell
   }
 
   /**
+   * Serialize a built XML element, failing loud on the (practically unreachable)
+   * serialization failure instead of posting garbage.
+   * @return string XML output
+   */
+  private function toXml(SimpleXMLElement $element): string
+  {
+    $xml = $element->asXML();
+    // @codeCoverageIgnoreStart
+    // asXML() only returns false when serialization itself fails, which the
+    // public API cannot trigger; excluded from coverage like the queue closure.
+    if ($xml === false) {
+      throw new \RuntimeException('Failed to build Mutlucell XML payload.');
+    }
+    // @codeCoverageIgnoreEnd
+    return $xml;
+  }
+
+  /**
    * The method that creates a XML string to send to Mutlucell API
    * @param string $date the date of the sms to be sent
    * @param array $messages the messages array to be dispatched.
    * @return string the XML output
    */
-  private function generateXMLStringForSending(string $date = '', array $messages = [])
+  private function generateXMLStringForSending(string $date = '', array $messages = []): string
   {
     $smsXMLElement = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smspack/>');
     $smsXMLElement->addAttribute('ka', $this->config['auth']['username']);
@@ -141,7 +159,7 @@ class Mutlucell
       $message->addChild('nums', $eachMessage['nums']);
     }
 
-    return $smsXMLElement->asXML();
+    return $this->toXml($smsXMLElement);
   }
 
   /**
@@ -225,11 +243,6 @@ class Mutlucell
 
   /**
    * Adds phone number(s) to the blacklist
-   * @param array|string $phoneNumbers The phone numbers
-   * @return string status API response
-   */
-  /**
-   * Adds phone number(s) to the blacklist
    * Call with PHP 8 named arguments, e.g. addBlacklist(phoneNumbers: ['905551112233']).
    * @param array $phoneNumbers The phone numbers
    * @return string status API response
@@ -270,7 +283,7 @@ class Mutlucell
     $blXMLElement->addAttribute('ka', $this->config['auth']['username']);
     $blXMLElement->addAttribute('pwd', $this->config['auth']['password']);
     $blXMLElement->addChild('nums', implode(', ', $phoneNumbers));
-    $xml = $blXMLElement->asXML();
+    $xml = $this->toXml($blXMLElement);
 
     return $this->postXML($xml, $url);
   }
@@ -285,7 +298,7 @@ class Mutlucell
     $creditXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smskredi/>');
     $creditXML->addAttribute('ka', $this->config['auth']['username']);
     $creditXML->addAttribute('pwd', $this->config['auth']['password']);
-    $xml = $creditXML->asXML();
+    $xml = $this->toXml($creditXML);
 
     $response = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtcrdtex');
 
@@ -303,7 +316,7 @@ class Mutlucell
     $originatorsXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smsorig/>');
     $originatorsXML->addAttribute('ka', $this->config['auth']['username']);
     $originatorsXML->addAttribute('pwd', $this->config['auth']['password']);
-    $xml = $originatorsXML->asXML();
+    $xml = $this->toXml($originatorsXML);
 
     return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtorgex');
   }
@@ -319,7 +332,7 @@ class Mutlucell
     $originatorsXML->addAttribute('ka', $this->config['auth']['username']);
     $originatorsXML->addAttribute('pwd', $this->config['auth']['password']);
     $originatorsXML->addAttribute('id', $messageId);
-    $xml = $originatorsXML->asXML();
+    $xml = $this->toXml($originatorsXML);
 
     $result = $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/gtblkrprtex');
     if ($this->isNum($result)) {

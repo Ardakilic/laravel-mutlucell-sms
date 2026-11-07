@@ -136,11 +136,21 @@ var_dump(Mutlucell::parseOutput(output: $send));
 ```bash
 >>> \Mutlucell::getMessageReport(messageId: '1234567890');
 => [
-    [
-      "number" => "905321234567",
-      "result" => "3",
-      "result_text" => "Başarılı",
+    'success' => true,
+    'numbers' => [
+      '905321234567' => [
+        'success' => true,
+        'number' => '905321234567',
+        'result' => '3',
+        'result_text' => 'Başarılı',
+      ],
     ],
+   ]
+
+# Hatalı ID'de:
+=> [
+    'success' => false,
+    'error' => ['error_code' => 20, 'error_message' => '...'],
    ]
 ```
 

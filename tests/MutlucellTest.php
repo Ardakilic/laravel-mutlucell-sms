@@ -154,7 +154,7 @@ class MutlucellTest extends TestCase
         [$sut] = $this->makeSut();
         $init = new \ReflectionMethod(Mutlucell::class, 'initSenderAndMessage');
         $init->setAccessible(true);
-        $init->invoke($sut, message: '', sender: '');
+        $init->invoke($sut, '', '');
 
         $message = new \ReflectionProperty(Mutlucell::class, 'message');
         $message->setAccessible(true);

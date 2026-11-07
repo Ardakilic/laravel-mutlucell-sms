@@ -41,6 +41,9 @@ jobs:
 
       - name: Measure coverage on base and head
         id: measure
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           set -u
           cover() {
@@ -60,9 +63,8 @@ jobs:
             # $1 = base, $2 = head. Prints "+N.N" or "n/a".
             if [ "$1" = "n/a" ] || [ "$2" = "n/a" ]; then echo "n/a"; else php -r 'printf("%+.1f", $argv[2] - $argv[1]);' "$1" "$2"; fi
           }
-          BASE_STATUS=0
           HEAD_STATUS=0
-          cover "$GITHUB_WORKSPACE/base" || BASE_STATUS=$?
+          cover "$GITHUB_WORKSPACE/base" || true
           cover "$GITHUB_WORKSPACE/head" || HEAD_STATUS=$?
           read -r BL BM BC <<< "$(pct "$GITHUB_WORKSPACE/base/coverage/clover.xml")"
           read -r HL HM HC <<< "$(pct "$GITHUB_WORKSPACE/head/coverage/clover.xml")"
@@ -70,7 +72,7 @@ jobs:
           {
             echo "## Coverage: base vs head"
             echo ""
-            echo "| Metric | base (\`${{ github.base_ref }}\`) | head (\`${{ github.head_ref }}\`) | delta |"
+            echo "| Metric | base (\`${BASE_REF}\`) | head (\`${HEAD_REF}\`) | delta |"
             echo "| --- | --- | --- | --- |"
             echo "| Lines | ${BL}% | ${HL}% | ${DL} |"
             echo "| Methods | ${BM}% | ${HM}% | ${DM} |"
@@ -117,4 +119,6 @@ jobs:
             });
 
       - name: Fail if head tests failed
-        run: exit ${{ steps.measure.outputs.head_status }}
+        env:
+          HEAD_STATUS: ${{ steps.measure.outputs.head_status }}
+        run: exit "${HEAD_STATUS:-1}"
