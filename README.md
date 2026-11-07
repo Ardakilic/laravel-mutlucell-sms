@@ -49,6 +49,10 @@ Metotlar artık PHP 8 isimli argümanlarla çağrılmalıdır. Parametre adları
 * `$senderID` -> `sender:`
 * `$receiversMessage` -> `messages:` (`sendMulti2` `sendMulti` oldu; liste-içi-liste formatı kalktı, sadece `numara => mesaj` eşlemesi)
 * `sendBulk(recipients:)` ve kara liste metotları artık sadece dizi kabul eder (`phoneNumbers:`)
+* `sendBulk(recipients: [])` boş diziyle istek atmadan `102` döner (`send()` ile tutarlı)
+* `getMessageReport` hata biçimi değişti: `$report[0]` yerine `$report['error']` (`error_code` / `error_message`)
+* Config ve `confirm` hataları artık `InvalidArgumentException` (`\Exception` yerine)
+* Tüm public metotlara dönüş tipi eklendi (`send(): string|int`, `checkBalance(): int`, …)
 * `deleteBlackList` -> `deleteBlacklist`; numarasız çağrı tüm listeyi sildiği için artık `confirm: true` ister (`deleteBlacklist(confirm: true)`), aksi halde `InvalidArgumentException` atar
 * `$receiver` -> `receiver:`, `$recipients` -> `recipients:` (artık sadece dizi kabul eder), `$message` -> `message:`, `$date` -> `date:`, `$phoneNumbers` -> `phoneNumbers:`, `$messageId` -> `messageId:` (anlamları değişmedi, sadece isimli çağrıda bu adları kullanın)
 

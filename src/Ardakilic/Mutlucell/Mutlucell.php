@@ -29,7 +29,7 @@ class Mutlucell
 
   protected ?ClientInterface $httpClient = null;
 
-  private const SMS_ID_PATTERN = '/(\$[0-9]+\#[0-9]+\.[0-9]+)/i';
+  private const string SMS_ID_PATTERN = '/(\$[0-9]+\#[0-9]+\.[0-9]+)/i';
 
   /**
    * Create a new Mutlucell instance.
@@ -51,28 +51,25 @@ class Mutlucell
    *
    * @param array $config
    * @return $this
-   * @throws \Exception if auth parameter or originator is not set
+   * @throws \InvalidArgumentException if auth parameter or originator is not set
    */
-  public function setConfig(array $config)
+  public function setConfig(array $config): static
   {
-    $this->config = $config;
-    $this->sender = $this->config['default_sender'];
-
     // The user may have called setConfig() manually,
     // and the array may have missing arguments.
     // So, we're checking whether they are set, and filling them if not set
     // Critical ones will throw exceptions, non-critical ones will set default values
-    // TODO: Refactor this method
-    if (!isset($this->config['auth'])) {
-      throw new \Exception($this->lang['exceptions']['0']);
-    } else {
-      if (!isset($this->config['auth']['username']) || !isset($this->config['auth']['password'])) {
-        throw new \Exception($this->lang['exceptions']['1']);
-      }
+    if (!isset($config['auth'])) {
+      throw new \InvalidArgumentException($this->lang['exceptions']['0']);
     }
-    if (!isset($this->config['default_sender'])) {
-      throw new \Exception($this->lang['exceptions']['2']);
+    if (!isset($config['auth']['username']) || !isset($config['auth']['password'])) {
+      throw new \InvalidArgumentException($this->lang['exceptions']['1']);
     }
+    if (!isset($config['default_sender'])) {
+      throw new \InvalidArgumentException($this->lang['exceptions']['2']);
+    }
+    $this->config = $config;
+    $this->sender = $config['default_sender'];
     $this->config['queue'] ??= false;
     $this->config['charset'] ??= 'default';
     $this->config['append_unsubscribe_link'] ??= false;
@@ -145,10 +142,15 @@ class Mutlucell
    * @param string $message message to be sent
    * @param string $date when will the message be sent?
    * @param string $sender originator/sender id (may be a text or number)
-   * @return string status API response
+   * @return string|int status API response (102 when no recipients)
    */
-  public function sendBulk(array $recipients, string $message = '', string $date = '', string $sender = '')
+  public function sendBulk(array $recipients, string $message = '', string $date = '', string $sender = ''): string|int
   {
+    // No recipients, no send (same 102 as send() with an empty receiver)
+    if ($recipients === []) {
+      return 102;
+    }
+
     // Checks the $message and $sender, and initializes it
     $this->initSenderAndMessage($message, $sender);
 
@@ -171,9 +173,9 @@ class Mutlucell
    * @param string $message message to be sent
    * @param string $date delivery date
    * @param string $sender originator/sender id (may be a text or number)
-   * @return string status API response
+   * @return string|int status API response (102 when receiver is empty)
    */
-  public function send(string $receiver, string $message = '', string $date = '', string $sender = '')
+  public function send(string $receiver, string $message = '', string $date = '', string $sender = ''): string|int
   {
     // Ensure that the receiver is not empty
     if (trim($receiver) === '') {
@@ -194,7 +196,7 @@ class Mutlucell
    * @param string $sender originator/sender id (may be a text or number)
    * @return string status API response
    */
-  public function sendMulti(array $messages, string $date = '', string $sender = '')
+  public function sendMulti(array $messages, string $date = '', string $sender = ''): string
   {
     // initSenderAndMessage cannot be used, because messages is an array
     $this->sender = $this->resolveSender($sender);
@@ -223,7 +225,7 @@ class Mutlucell
    * @param array $phoneNumbers The phone numbers
    * @return string status API response
    */
-  public function addBlacklist(array $phoneNumbers = [])
+  public function addBlacklist(array $phoneNumbers = []): string
   {
     return $this->postBlacklist($phoneNumbers, 'addblacklist', 'https://smsgw.mutlucell.com/smsgw-ws/addblklst');
   }
@@ -235,8 +237,9 @@ class Mutlucell
    * @param array $phoneNumbers The phone numbers
    * @param bool $confirm Required when $phoneNumbers is empty (delete all)
    * @return string
+   * @throws \InvalidArgumentException when $phoneNumbers is empty without $confirm
    */
-  public function deleteBlacklist(array $phoneNumbers = [], bool $confirm = false)
+  public function deleteBlacklist(array $phoneNumbers = [], bool $confirm = false): string
   {
     if ($phoneNumbers === [] && !$confirm) {
       throw new \InvalidArgumentException($this->lang['exceptions']['3']);
@@ -268,7 +271,7 @@ class Mutlucell
    * Shows how much SMS you have left
    * @return integer number of SMSes left for the account
    */
-  public function checkBalance()
+  public function checkBalance(): int
   {
     $creditXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smskredi/>');
     $creditXML->addAttribute('ka', $this->config['auth']['username']);
@@ -286,7 +289,7 @@ class Mutlucell
    * Lists the originators associated for the account
    * @return string list of originators
    */
-  public function listOriginators()
+  public function listOriginators(): string
   {
     $originatorsXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smsorig/>');
     $originatorsXML->addAttribute('ka', $this->config['auth']['username']);
@@ -299,9 +302,9 @@ class Mutlucell
   /**
    * @param string $messageId String the id of the dispatched message
    *
-   * @return array|string
+   * @return array
    */
-  public function getMessageReport(string $messageId)
+  public function getMessageReport(string $messageId): array
   {
     $originatorsXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><smsrapor/>');
     $originatorsXML->addAttribute('ka', $this->config['auth']['username']);
@@ -323,7 +326,7 @@ class Mutlucell
 
       $code = (int) $result;
       if (isset($knownErrors[$code])) {
-        $report[] = [
+        $report['error'] = [
           'error_code' => $code,
           'error_message' => $knownErrors[$code],
         ];
@@ -353,9 +356,9 @@ class Mutlucell
   /**
    * Parse the output
    * @param string|int $output API's response (send() may return int error codes, e.g. 102)
-   * @return string status code
+   * @return string|int status code
    */
-  public function parseOutput(string|int $output)
+  public function parseOutput(string|int $output): string|int
   {
     // if error code is returned, api OR the app will return an integer error code
     if ($this->isNum($output)) {
@@ -389,7 +392,7 @@ class Mutlucell
    * @param string|int $output API's response (send() may return int error codes, e.g. 102)
    * @return boolean
    */
-  public function getStatus(string|int $output)
+  public function getStatus(string|int $output): bool
   {
     // If error code is returned, API will return an integer error code
     if ($this->isNum($output)) {
@@ -420,7 +423,7 @@ class Mutlucell
    *
    * @return string|null
    */
-  public function getMessageId(string $output)
+  public function getMessageId(string $output): string|null
   {
     if (preg_match(self::SMS_ID_PATTERN, $output)) {
       // Returned output is formatted like $ID#STATUS
@@ -439,7 +442,7 @@ class Mutlucell
    * @param string $message message to be sent
    * @param string $sender originator ID
    */
-  protected function initSenderAndMessage(string $message, string $sender)
+  protected function initSenderAndMessage(string $message, string $sender): void
   {
     $this->sender = $this->resolveSender($sender);
 
@@ -457,7 +460,7 @@ class Mutlucell
    * @return string API Status
    *
    */
-  private function postXML(string $xml, string $url)
+  private function postXML(string $xml, string $url): string
   {
     if ($this->config['queue']) {
       // @codeCoverageIgnoreStart

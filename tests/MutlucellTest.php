@@ -21,7 +21,7 @@ class MutlucellTest extends TestCase
     {
         [$sut] = $this->makeSut();
 
-        $this->expectException(\Exception::class);
+        $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Mutlucell auth parameter is not set in the config!');
         $sut->setConfig(['default_sender' => 'TEST']);
     }
@@ -31,7 +31,7 @@ class MutlucellTest extends TestCase
     {
         [$sut] = $this->makeSut();
 
-        $this->expectException(\Exception::class);
+        $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Mutlucell Auth User and Password are not set correctly!');
         $sut->setConfig(['auth' => ['username' => 'u'], 'default_sender' => 'TEST']);
     }
@@ -41,16 +41,9 @@ class MutlucellTest extends TestCase
     {
         [$sut] = $this->makeSut();
 
-        // src reads default_sender before the isset check, silence that notice locally
-        set_error_handler(static fn (): bool => true, E_WARNING);
-        try {
-            $sut->setConfig(['auth' => ['username' => 'u', 'password' => 'p']]);
-            $this->fail('Expected exception was not thrown.');
-        } catch (\Exception $e) {
-            $this->assertSame('Mutlucell Default sender (originator) is not set!', $e->getMessage());
-        } finally {
-            restore_error_handler();
-        }
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Mutlucell Default sender (originator) is not set!');
+        $sut->setConfig(['auth' => ['username' => 'u', 'password' => 'p']]);
     }
 
     #[Test]
@@ -194,6 +187,16 @@ class MutlucellTest extends TestCase
     }
 
     #[Test]
+    public function send_bulk_empty_returns_102_without_http(): void
+    {
+        $history = [];
+        [$sut, $history] = $this->makeSut([], [], $history);
+
+        $this->assertSame(102, $sut->sendBulk(recipients: [], message: 'hello'));
+        $this->assertCount(0, $history);
+    }
+
+    #[Test]
     public function send_multi(): void
     {
         $history = [];
@@ -330,8 +333,8 @@ class MutlucellTest extends TestCase
             $report = $sut->getMessageReport(messageId: '1');
 
             $this->assertFalse($report['success']);
-            $this->assertSame($code, $report[0]['error_code']);
-            $this->assertSame($message, $report[0]['error_message']);
+            $this->assertSame($code, $report['error']['error_code']);
+            $this->assertSame($message, $report['error']['error_message']);
             $this->assertStringContainsString('gtblkrprtex', (string) $history[0]['request']->getUri());
         }
     }
