@@ -53,6 +53,7 @@ Metotlar artık PHP 8 isimli argümanlarla çağrılmalıdır. Parametre adları
 * `getMessageReport` hata biçimi değişti: `$report[0]` yerine `$report['error']` (`error_code` / `error_message`)
 * Config ve `confirm` hataları artık `InvalidArgumentException` (`\Exception` yerine)
 * Tüm public metotlara dönüş tipi eklendi (`send(): string|int`, `checkBalance(): int`, …)
+* Yeni sabitler: `Mutlucell::STATUS_SUCCESS` / `Mutlucell::STATUS_FAILED` (`getStatus` dönüşüyle `===` ile karşılaştırın; facade üzerinden değil sınıf üzerinden erişilir)
 * `deleteBlackList` -> `deleteBlacklist`; numarasız çağrı tüm listeyi sildiği için artık `confirm: true` ister (`deleteBlacklist(confirm: true)`), aksi halde `InvalidArgumentException` atar
 * `$receiver` -> `receiver:`, `$recipients` -> `recipients:` (artık sadece dizi kabul eder), `$message` -> `message:`, `$date` -> `date:`, `$phoneNumbers` -> `phoneNumbers:`, `$messageId` -> `messageId:` (anlamları değişmedi, sadece isimli çağrıda bu adları kullanın)
 
@@ -80,6 +81,17 @@ if(Mutlucell::getStatus(output: $send)) {
   echo 'SMS başarı ile gönderildi!';
 } else {
   echo 'SMS gönderilemedi';
+}
+```
+
+Durumu sabitlerle karşılaştırmak için (facade sabitleri aktarmaz, sınıfı ayrı
+bir adla içeri alın):
+
+```php
+use Ardakilic\Mutlucell\Mutlucell as SmsStatus;
+
+if (Mutlucell::getStatus(output: $send) === SmsStatus::STATUS_SUCCESS) {
+  echo 'SMS başarı ile gönderildi!';
 }
 ```
 

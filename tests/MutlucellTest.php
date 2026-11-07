@@ -389,6 +389,16 @@ class MutlucellTest extends TestCase
     }
 
     #[Test]
+    public function get_status_constants_match_return(): void
+    {
+        [$sut] = $this->makeSut();
+
+        $this->assertSame(Mutlucell::STATUS_SUCCESS, $sut->getStatus(output: '$1#1.0'));
+        $this->assertSame(Mutlucell::STATUS_FAILED, $sut->getStatus(output: '22'));
+        $this->assertSame(Mutlucell::STATUS_FAILED, $sut->getStatus(output: 102));
+    }
+
+    #[Test]
     public function get_status(): void
     {
         [$sut] = $this->makeSut();

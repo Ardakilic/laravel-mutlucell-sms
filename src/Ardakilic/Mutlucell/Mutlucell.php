@@ -29,6 +29,15 @@ class Mutlucell
 
   protected ?ClientInterface $httpClient = null;
 
+  /**
+   * Values returned by getStatus(). Compare with === for clarity, e.g.
+   * getStatus(output: $send) === Mutlucell::STATUS_SUCCESS.
+   * Note: facades proxy methods only, so reference these on
+   * Ardakilic\Mutlucell\Mutlucell, not on the facade alias.
+   */
+  public const bool STATUS_SUCCESS = true;
+  public const bool STATUS_FAILED = false;
+
   private const string SMS_ID_PATTERN = '/(\$[0-9]+\#[0-9]+\.[0-9]+)/i';
 
   /**
@@ -390,7 +399,7 @@ class Mutlucell
   /**
    * Gets the SMS's status
    * @param string|int $output API's response (send() may return int error codes, e.g. 102)
-   * @return boolean
+   * @return boolean Mutlucell::STATUS_SUCCESS or Mutlucell::STATUS_FAILED
    */
   public function getStatus(string|int $output): bool
   {

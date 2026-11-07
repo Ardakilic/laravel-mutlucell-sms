@@ -19,6 +19,7 @@ içindeki "Yükseltme" bölümü geçiş örneklerini içerir.
 - `getMessageReport` hata biçimi: `$report[0]` yerine `$report['error']`.
 - Config hataları artık `InvalidArgumentException` (`\Exception` yerine).
 - Tüm public metotlara dönüş tipi eklendi.
+- Yeni sabitler: `Mutlucell::STATUS_SUCCESS` / `Mutlucell::STATUS_FAILED`.
 
 ### Düzeltilenler
 
