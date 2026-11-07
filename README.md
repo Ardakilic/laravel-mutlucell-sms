@@ -47,10 +47,10 @@ Kullanım
 Metotlar artık PHP 8 isimli argümanlarla çağrılmalıdır. Parametre adları değişti:
 
 * `$senderID` -> `sender:`
-* `$receiversMessage` -> `messages:`
+* `$receiversMessage` -> `messages:` (`sendMulti2` `sendMulti` oldu; liste-içi-liste formatı kalktı, sadece `numara => mesaj` eşlemesi)
 * `$receiver` -> `receiver:`, `$recipients` -> `recipients:` (artık sadece dizi kabul eder), `$message` -> `message:`, `$date` -> `date:`, `$phoneNumbers` -> `phoneNumbers:`, `$messageId` -> `messageId:` (anlamları değişmedi, sadece isimli çağrıda bu adları kullanın)
 
-Not: `sendMulti` / `sendMulti2` artık boş olmayan bir `sender:` değerini dikkate alır (önceden göz ardı edilip originator varsayılan olarak kalırdı).
+Not: `sendMulti` artık boş olmayan bir `sender:` değerini dikkate alır (önceden göz ardı edilip originator varsayılan olarak kalırdı).
 
 ```php
 // Eski
@@ -105,23 +105,11 @@ var_dump(Mutlucell::parseOutput(output: $send));
 
 ```php
 $kisiMesajlar = [
-  ['05315558964', 'Merhaba1'],
-  ['+905415589632', 'Merhaba2'],
-  ['00905369998874', 'Merhaba3']
+  '05315558964' => 'Merhaba1',
+  '+905415589632' => 'Merhaba2',
+  '00905369998874' => 'Merhaba3'
 ];
 $send = Mutlucell::sendMulti(messages: $kisiMesajlar);
-var_dump(Mutlucell::parseOutput(output: $send));
-```
-
-Veya
-
-```php
-$kisiMesajlar = [
-  ['05315558964' => 'Merhaba1'],
-  ['+905415589632' => 'Merhaba2'],
-  ['00905369998874' => 'Merhaba3']
-];
-$send = Mutlucell::sendMulti2(messages: $kisiMesajlar);
 var_dump(Mutlucell::parseOutput(output: $send));
 ```
 

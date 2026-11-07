@@ -199,7 +199,7 @@ class MutlucellTest extends TestCase
         $history = [];
         [$sut, $history] = $this->makeSut([], ['$1#1.0'], $history);
 
-        $sut->sendMulti(messages: [['905551112233', 'msg1'], ['905544443322', 'msg2']]);
+        $sut->sendMulti(messages: ['905551112233' => 'msg1', '905544443322' => 'msg2']);
 
         $xml = $this->xmlOf($history);
         $this->assertSame('TEST', (string) $xml['org']);
@@ -214,31 +214,11 @@ class MutlucellTest extends TestCase
     public function send_multi_uses_custom_sender(): void
     {
         $history = [];
-        [$sut, $history] = $this->makeSut([], ['$1#1.0', '$2#1.0'], $history);
-
-        $sut->sendMulti(messages: [['905551112233', 'msg1']], sender: 'CUSTOM');
-
-        $this->assertSame('CUSTOM', (string) $this->xmlOf($history)['org']);
-
-        $sut->sendMulti2(messages: ['905551112233' => 'm1'], sender: 'CUSTOM');
-
-        $this->assertSame('CUSTOM', (string) $this->xmlOf($history, 1)['org']);
-    }
-
-    #[Test]
-    public function send_multi2(): void
-    {
-        $history = [];
         [$sut, $history] = $this->makeSut([], ['$1#1.0'], $history);
 
-        $sut->sendMulti2(messages: ['905551112233' => 'm1', '905544443322' => 'm2']);
+        $sut->sendMulti(messages: ['905551112233' => 'msg1'], sender: 'CUSTOM');
 
-        $xml = $this->xmlOf($history);
-        $this->assertCount(2, $xml->mesaj);
-        $this->assertSame('905551112233', (string) $xml->mesaj[0]->nums);
-        $this->assertSame('m1', (string) $xml->mesaj[0]->metin);
-        $this->assertSame('905544443322', (string) $xml->mesaj[1]->nums);
-        $this->assertSame('m2', (string) $xml->mesaj[1]->metin);
+        $this->assertSame('CUSTOM', (string) $this->xmlOf($history)['org']);
     }
 
     #[Test]

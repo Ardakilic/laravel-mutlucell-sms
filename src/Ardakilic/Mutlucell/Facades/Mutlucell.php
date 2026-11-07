@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static string send(string $receiver, string $message = '', string $date = '', string $sender = '')
  * @method static string sendBulk(array $recipients, string $message = '', string $date = '', string $sender = '')
  * @method static string sendMulti(array $messages, string $date = '', string $sender = '')
- * @method static string sendMulti2(array $messages, string $date = '', string $sender = '')
  * @method static string addBlacklist(array|string $phoneNumbers = '')
  * @method static string deleteBlackList(array|string $phoneNumbers = '')
  * @method static array|string getMessageReport(string $messageId)

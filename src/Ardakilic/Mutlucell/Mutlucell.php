@@ -198,41 +198,14 @@ class Mutlucell
 
 
   /**
-   * Sends multiple SMSes to various people with various content
-   * Call with PHP 8 named arguments, e.g. send(receiver: ..., message: ...).
+   * Sends multiple SMSes to various people with various content (number => message pairs)
+   * Call with PHP 8 named arguments, e.g. sendMulti(messages: ['905551112233' => 'Hi']).
    * @param array $messages recipients and message
    * @param string $date delivery date
    * @param string $sender originator/sender id (may be a text or number)
    * @return string status API response
    */
   public function sendMulti(array $messages, string $date = '', string $sender = '')
-  {
-    // initSenderAndMessage cannot be used, because messages is an array
-    $this->sender = $this->resolveSender($sender);
-
-    $preparedMessages = [];
-    foreach ($messages as $eachMessageBlock) {
-      $preparedMessages[] = [
-        'text' => $eachMessageBlock[1], // Message
-        'nums' => $eachMessageBlock[0], // Number(s)
-      ];
-    }
-
-    $xml = $this->generateXMLStringForSending($date, $preparedMessages);
-
-    return $this->postXML($xml, 'https://smsgw.mutlucell.com/smsgw-ws/sndblkex');
-  }
-
-
-  /**
-   * Sends multiple SMSes to various people with various content with key and value pair
-   * Call with PHP 8 named arguments, e.g. send(receiver: ..., message: ...).
-   * @param array $messages recipients and message
-   * @param string $date delivery date
-   * @param string $sender originator/sender id (may be a text or number)
-   * @return string status API response
-   */
-  public function sendMulti2(array $messages, string $date = '', string $sender = '')
   {
     // initSenderAndMessage cannot be used, because messages is an array
     $this->sender = $this->resolveSender($sender);
