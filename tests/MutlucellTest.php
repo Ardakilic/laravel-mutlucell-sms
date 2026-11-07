@@ -370,6 +370,7 @@ class MutlucellTest extends TestCase
         $this->assertSame('SMS have been sent successfully!', $sut->parseOutput(output: '$456#1.0'));
         $this->assertSame('No SMS sent', $sut->parseOutput(output: '$456#0.0'));
         $this->assertSame('something-else', $sut->parseOutput(output: 'something-else'));
+        $this->assertSame('Misformatted Recipent(s), all of them have to be an integer', $sut->parseOutput(output: 102));
     }
 
     #[Test]
@@ -391,6 +392,7 @@ class MutlucellTest extends TestCase
         $this->assertFalse($sut->getStatus(output: '$1#0.0'));
         $this->assertTrue($sut->getStatus(output: '$1#1.0'));
         $this->assertFalse($sut->getStatus(output: 'garbage'));
+        $this->assertFalse($sut->getStatus(output: 102));
     }
 
     #[Test]

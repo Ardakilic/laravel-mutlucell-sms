@@ -352,10 +352,10 @@ class Mutlucell
 
   /**
    * Parse the output
-   * @param string $output API's response
+   * @param string|int $output API's response (send() may return int error codes, e.g. 102)
    * @return string status code
    */
-  public function parseOutput(string $output)
+  public function parseOutput(string|int $output)
   {
     // if error code is returned, api OR the app will return an integer error code
     if ($this->isNum($output)) {
@@ -396,10 +396,10 @@ class Mutlucell
 
   /**
    * Gets the SMS's status
-   * @param string $output API's response
+   * @param string|int $output API's response (send() may return int error codes, e.g. 102)
    * @return boolean
    */
-  public function getStatus(string $output)
+  public function getStatus(string|int $output)
   {
     // If error code is returned, API will return an integer error code
     if ($this->isNum($output)) {

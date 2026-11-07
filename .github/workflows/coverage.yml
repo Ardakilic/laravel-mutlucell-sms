@@ -8,6 +8,7 @@ on:
       - 'tests/**'
       - 'composer.json'
       - 'phpunit.xml'
+      - '.github/workflows/coverage.yml'
 
 permissions:
   contents: read

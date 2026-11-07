@@ -18,8 +18,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static string addBlacklist(array $phoneNumbers = [])
  * @method static string deleteBlacklist(array $phoneNumbers = [], bool $confirm = false)
  * @method static array|string getMessageReport(string $messageId)
- * @method static string parseOutput(string $output)
- * @method static bool getStatus(string $output)
+ * @method static string parseOutput(string|int $output)
+ * @method static bool getStatus(string|int $output)
  * @method static string|null getMessageId(string $output)
  */
 class Mutlucell extends Facade
